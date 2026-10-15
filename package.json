@@ -1,0 +1,23 @@
+{
+  "name": "pit-wall",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Browser-based F1 race-strategy game driven by real FastF1-fitted data",
+  "workspaces": [
+    "engine",
+    "web"
+  ],
+  "engines": {
+    "node": ">=22.22.3"
+  },
+  "scripts": {
+    "test": "npm run test -w @pit-wall/engine",
+    "test:data": "cd data && .venv/bin/python -m pytest -q",
+    "smoke": "npm run test:data && npm run test && npm run typecheck -w @pit-wall/engine",
+    "balance": "npm run balance -w @pit-wall/engine",
+    "dev": "npm run start -w @pit-wall/web",
+    "build": "npm run build -w @pit-wall/web",
+    "data:setup": "cd data && python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'",
+    "data:fetch": "cd data && .venv/bin/python -m pitwall.fetch_race"
+  }
+}

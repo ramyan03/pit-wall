@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "season": 2026,
+    "round": 99,
+    "eventName": "Synthetic Test Circuit",
+    "trackId": "2026-synthetic",
+    "laps": 50,
+    "synthetic": true,
+    "source": {
+      "fastf1Version": null,
+      "generatedAt": "2026-10-15T00:00:00Z",
+      "incidentSeasons": []
+    }
+  },
+  "conditions": {
+    "airTempC": 25.0,
+    "trackTempC": 35.0,
+    "refTempC": 35.0
+  },
+  "compoundAllocation": {
+    "S": "C5",
+    "M": "C4",
+    "H": "C3"
+  },
+  "tyres": {
+    "S": {
+      "compoundOffset": -0.8,
+      "degRate": 0.09,
+      "cliffLap": 18,
+      "cliffK": 0.02,
+      "tempSens": 0.012,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    },
+    "M": {
+      "compoundOffset": 0.0,
+      "degRate": 0.06,
+      "cliffLap": 28,
+      "cliffK": 0.015,
+      "tempSens": 0.01,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    },
+    "H": {
+      "compoundOffset": 0.5,
+      "degRate": 0.04,
+      "cliffLap": 40,
+      "cliffK": 0.01,
+      "tempSens": 0.008,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    }
+  },
+  "priorTyres": null,
+  "fuel": {
+    "fuelSecPerLap": 0.04
+  },
+  "trackEvo": 0.01,
+  "noiseSigma": 0.25,
+  "pit": {
+    "pitLoss": 20.0,
+    "stationaryMean": 2.4,
+    "slowStopProb": 0.05,
+    "slowStopExtra": [
+      1.0,
+      3.0
+    ]
+  },
+  "traffic": {
+    "followGap": 1.0,
+    "overtakeDelta": 0.8,
+    "overtakeProb": 0.15
+  },
+  "incidents": {
+    "scHazardPerLap": 0.01,
+    "vscHazardPerLap": 0.01,
+    "redHazardPerLap": 0.001,
+    "scDurationLaps": [
+      3,
+      6
+    ],
+    "vscDurationLaps": [
+      1,
+      3
+    ],
+    "scCompressedGap": 0.8,
+    "lapTimeMult": {
+      "sc": 1.4,
+      "vsc": 1.35
+    },
+    "pitLossMult": {
+      "sc": 0.5,
+      "vsc": 0.6
+    }
+  },
+  "teams": [
+    {
+      "id": "team-a",
+      "name": "Team A",
+      "colour": "#3366CC"
+    },
+    {
+      "id": "team-b",
+      "name": "Team B",
+      "colour": "#CC3333"
+    }
+  ],
+  "drivers": [
+    {
+      "code": "AAA",
+      "number": 1,
+      "teamId": "team-a",
+      "basePace": 90.0,
+      "gridPosition": 1
+    },
+    {
+      "code": "BBB",
+      "number": 2,
+      "teamId": "team-a",
+      "basePace": 90.2,
+      "gridPosition": 2
+    },
+    {
+      "code": "CCC",
+      "number": 3,
+      "teamId": "team-b",
+      "basePace": 90.3,
+      "gridPosition": 3
+    },
+    {
+      "code": "DDD",
+      "number": 4,
+      "teamId": "team-b",
+      "basePace": 90.5,
+      "gridPosition": 4
+    }
+  ],
+  "strategies": [
+    {
+      "id": "1stop-MH",
+      "stints": [
+        "M",
+        "H"
+      ],
+      "pitLaps": [
+        22
+      ],
+      "pitLapJitter": 3,
+      "weight": 0.6
+    },
+    {
+      "id": "2stop-SMS",
+      "stints": [
+        "S",
+        "M",
+        "S"
+      ],
+      "pitLaps": [
+        14,
+        34
+      ],
+      "pitLapJitter": 2,
+      "weight": 0.4
+    }
+  ]
+}

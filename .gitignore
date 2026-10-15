@@ -1,0 +1,33 @@
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+.angular/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# FastF1 cache (large; regenerate locally)
+data/cache/
+.fastf1-cache/
+
+# Pipeline scratch output (commit only the curated per-track JSON)
+data/out/*.raw.json
+data/out/tmp/
+
+# Env / OS / editors
+.env
+.env.*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.vercel/

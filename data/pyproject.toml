@@ -1,0 +1,22 @@
+[project]
+name = "pitwall-data"
+version = "0.0.0"
+description = "Offline FastF1 pipeline that fits per-track race-model parameters for Pit Wall"
+requires-python = ">=3.11"
+dependencies = [
+  "fastf1>=3.8,<4",
+  "jsonschema>=4.23",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["pitwall"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

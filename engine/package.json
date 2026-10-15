@@ -1,0 +1,27 @@
+{
+  "name": "@pit-wall/engine",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure TypeScript, seeded, DOM-free F1 race simulation",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema/track.schema.json": "./schema/track.schema.json"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "balance": "tsx scripts/balance.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "ajv": "^8.17.1",
+    "tsx": "^4.20.0",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.0"
+  }
+}
