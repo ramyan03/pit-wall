@@ -7,8 +7,10 @@
 //   continuation: no further stop if the two-compound rule allows it, else one more stop.
 // Sample i uses the same race key for every candidate (common random numbers), so candidates
 // are compared on the same futures: same incidents, same noise.
+// Real-events replays are simulated with random incidents: the strategist can't see the future.
 import {
   applyCommand,
+  availableCompounds,
   runToFinish,
   type Compound,
   type PlannedStop,
@@ -47,7 +49,6 @@ export interface HintResponse {
   ms: number;
 }
 
-const COMPOUNDS: Compound[] = ['S', 'M', 'H'];
 const WINDOW_TOLERANCE = 0.35;
 const HORIZON = 30;
 
@@ -74,7 +75,8 @@ function evaluator(track: TrackData, state: RaceState, samples: number) {
           strategy: { ...c.strategy, startCompound: compound, stops },
         };
       });
-      const s0 = commands.reduce(applyCommand, { ...state, cars, rngState: key });
+      const config = { ...state.config, realEvents: false };
+      const s0 = commands.reduce(applyCommand, { ...state, cars, config, rngState: key });
       const end = runToFinish(track, s0);
       const pos = end.cars.find((c) => c.isPlayer)!.position;
       total += pos;
@@ -87,16 +89,17 @@ function evaluator(track: TrackData, state: RaceState, samples: number) {
 function hint({ id, track, state, samples }: WorkerRequest): HintResponse {
   const t0 = performance.now();
   const evaluate = evaluator(track, state, samples);
+  const compounds = availableCompounds(track);
   const me = state.cars.find((c) => c.isPlayer)!;
   const lastLap = Math.min(state.totalLaps - 2, state.lap + HORIZON);
   const plans: Plan[] = [];
   if (me.compoundsUsed.length >= 2) plans.push(evaluate(null, []));
-  for (const compound of COMPOUNDS) {
+  for (const compound of compounds) {
     for (let lap = state.lap + 1; lap <= lastLap; lap++) plans.push(evaluate(null, [{ lap, compound }]));
   }
   plans.sort((a, b) => a.meanPos - b.meanPos);
 
-  const windows = COMPOUNDS.flatMap((compound) => {
+  const windows = compounds.flatMap((compound) => {
     const mine = plans.filter((p) => p.stops[0]?.compound === compound);
     if (!mine.length) return [];
     const top = mine[0]!;
@@ -114,13 +117,14 @@ function hint({ id, track, state, samples }: WorkerRequest): HintResponse {
 function compare({ id, track, state, samples, options = [] }: WorkerRequest): HintResponse {
   const t0 = performance.now();
   const evaluate = evaluator(track, state, samples);
+  const compounds = availableCompounds(track);
   const lastLap = Math.min(state.totalLaps - 2, state.lap + HORIZON);
   const estimates = options.map((commands) => {
     const after = commands.reduce(applyCommand, state).cars.find((c) => c.isPlayer)!;
     const used = new Set([...after.compoundsUsed, ...(after.pendingBox ? [after.pendingBox] : [])]);
     const first = state.lap + (after.pendingBox ? 3 : 1);
     let best = used.size >= 2 ? evaluate(null, [], commands).meanPos : Infinity;
-    for (const compound of COMPOUNDS) {
+    for (const compound of compounds) {
       for (let lap = first; lap <= lastLap; lap += 3) best = Math.min(best, evaluate(null, [{ lap, compound }], commands).meanPos);
     }
     return best;
@@ -131,25 +135,39 @@ function compare({ id, track, state, samples, options = [] }: WorkerRequest): Hi
 function recommend({ id, track, state, samples }: WorkerRequest): HintResponse {
   const t0 = performance.now();
   const evaluate = evaluator(track, state, samples);
+  const compounds = availableCompounds(track);
   const N = state.totalLaps;
   const plans: Plan[] = [];
   const step = Math.max(2, Math.round(N / 20));
-  for (const a of COMPOUNDS) {
-    for (const b of COMPOUNDS) {
+  for (const a of compounds) {
+    for (const b of compounds) {
       if (a === b) continue;
       for (let lap = Math.round(N * 0.2); lap <= Math.round(N * 0.75); lap += step) {
         plans.push(evaluate(a, [{ lap, compound: b }]));
       }
     }
   }
-  const twoStops: [Compound, Compound, Compound][] = [
-    ['S', 'M', 'H'],
-    ['M', 'H', 'M'],
-    ['S', 'H', 'M'],
-    ['M', 'H', 'S'],
-    ['S', 'M', 'S'],
-    ['H', 'M', 'S'],
-  ];
+  const twoStops = (
+    [
+      ['S', 'M', 'H'],
+      ['M', 'H', 'M'],
+      ['S', 'H', 'M'],
+      ['M', 'H', 'S'],
+      ['S', 'M', 'S'],
+      ['H', 'M', 'S'],
+      ['S', 'H', 'S'],
+      ['S', 'S', 'H'],
+      ['H', 'S', 'S'],
+    ] as [Compound, Compound, Compound][]
+  ).filter((seq) => seq.every((c) => compounds.includes(c)) && new Set(seq).size >= 2);
+  // High-deg classics (2011–13) were won on 3 and 4 stops.
+  if (compounds.length === 2) {
+    const [soft, hard] = compounds as [Compound, Compound];
+    for (const seq of [[soft, soft, soft, hard], [soft, soft, hard, soft], [soft, soft, soft, soft, hard]] as Compound[][]) {
+      const n = seq.length;
+      plans.push(evaluate(seq[0]!, seq.slice(1).map((compound, i) => ({ lap: Math.round((N * (i + 1)) / n), compound }))));
+    }
+  }
   for (const [a, b, c] of twoStops) {
     for (const f1 of [0.25, 0.32, 0.4]) {
       for (const f2 of [0.6, 0.68, 0.76]) {

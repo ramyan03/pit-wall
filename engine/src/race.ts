@@ -18,6 +18,8 @@
  *     - per-car pit stream (key, lap, driver): stationary noise, slow-stop chance, slow extra
  *     - per-car cover stream (key, lap, driver): one draw when an AI car may cover an undercut
  *   'driver' is the driver's index in track.drivers, so running order doesn't matter.
+ *   Real-events replays (config.realEvents) take neutralisations from track.realEvents and draw
+ *   nothing from the incident stream; retirements happen at the start of their lap.
  */
 import { Rng } from './rng';
 import type {
@@ -137,6 +139,9 @@ export function createRace(track: TrackData, config: RaceConfig): RaceState {
   if (!track.drivers.some((d) => d.code === config.playerDriver)) {
     throw new Error(`playerDriver ${config.playerDriver} is not on the grid`);
   }
+  if (!availableCompounds(track).includes(config.playerStrategy.startCompound)) {
+    throw new Error(`compound ${config.playerStrategy.startCompound} is not available at ${track.meta.trackId}`);
+  }
   const rng = new Rng(config.seed);
 
   // (1) Hard mode hides the real deg behind a lognormal draw.
@@ -183,6 +188,7 @@ export function createRace(track: TrackData, config: RaceConfig): RaceState {
       strategy,
       pitStops: 0,
       pendingBox: null,
+      retiredLap: null,
     };
   });
 
@@ -228,9 +234,20 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
   const events: RaceEvent[] = [];
   const inc = track.incidents;
 
-  // (1) Incidents. Not on lap 1 or the final lap, never in Easy.
+  // (1) Incidents. Real-events replays follow the real race (any lap). Random ones: not on lap 1
+  // or the final lap, never in Easy.
   let neut = { ...state.neutralisation };
-  if (neut.status === 'green' && state.config.difficulty !== 'easy' && lap > 1 && lap < total) {
+  const real = state.config.realEvents ? track.realEvents : undefined;
+  if (real) {
+    const x = neut.status === 'green' ? real.incidents.find((r) => r.lap === lap) : undefined;
+    if (x?.type === 'red') {
+      neut = { status: 'red', lapsRemaining: 1 };
+      events.push({ type: 'red_flag', lap });
+    } else if (x) {
+      neut = { status: x.type, lapsRemaining: x.laps };
+      events.push({ type: x.type === 'sc' ? 'sc_deployed' : 'vsc_deployed', lap, laps: x.laps });
+    }
+  } else if (neut.status === 'green' && state.config.difficulty !== 'easy' && lap > 1 && lap < total) {
     const u = rng.next();
     if (u < inc.redHazardPerLap) {
       neut = { status: 'red', lapsRemaining: 1 };
@@ -247,9 +264,22 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
   }
   const status = neut.status;
 
+  // Real retirements: the car stops at the start of its lap. Never the player.
+  const all = state.cars.map((c) => ({ ...c }));
+  for (const car of all) {
+    if (!real || car.isPlayer || car.status !== 'running') continue;
+    if (real.retirements.some((r) => r.driver === car.driver && r.lap === lap)) {
+      car.status = 'retired';
+      car.retiredLap = lap;
+      car.pendingBox = null;
+      events.push({ type: 'retirement', lap, driver: car.driver });
+    }
+  }
+  const out = all.filter((c) => c.status === 'retired');
+
   // Running order at the start of the lap.
-  const order = state.cars
-    .map((c) => ({ ...c }))
+  const order = all
+    .filter((c) => c.status !== 'retired')
     .sort((a, b) => a.totalTime - b.totalTime || a.position - b.position);
 
   // Who boxes at the end of this lap (no RNG).
@@ -442,7 +472,7 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
     order.sort((a, b) => a.totalTime - b.totalTime);
     const lead = order[0]!.totalTime;
     order.forEach((car, i) => {
-      fitTyres(car, redFlagCompound(car, total - lap), lap);
+      fitTyres(car, redFlagCompound(car, total - lap, availableCompounds(track)), lap);
       car.pendingBox = null;
       car.totalTime = lead + i * inc.scCompressedGap;
     });
@@ -470,7 +500,7 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
     for (const car of order) car.status = car.compoundsUsed.length >= 2 ? 'finished' : 'disqualified';
   }
 
-  const cars = classify(order);
+  const cars = classify([...order, ...out]);
   if (finished) events.push({ type: 'race_finish', lap, winner: cars[0]!.driver });
 
   return {
@@ -516,15 +546,22 @@ function fitTyres(car: CarState, to: Compound, lap: number): void {
   if (!car.compoundsUsed.includes(to)) car.compoundsUsed = [...car.compoundsUsed, to];
 }
 
-function redFlagCompound(car: CarState, lapsLeft: number): Compound {
+/** Compounds nominated for this race. */
+export function availableCompounds(track: TrackData): Compound[] {
+  return track.availableCompounds ?? ['S', 'M', 'H'];
+}
+
+function redFlagCompound(car: CarState, lapsLeft: number, avail: Compound[]): Compound {
   if (car.pendingBox) return car.pendingBox;
   const next = car.strategy.stops[0];
   if (next) {
     car.strategy = { ...car.strategy, stops: car.strategy.stops.slice(1) };
     return next.compound;
   }
-  if (car.compoundsUsed.length >= 2) return lapsLeft > 20 ? 'H' : lapsLeft > 10 ? 'M' : 'S';
-  const pref: Compound[] = lapsLeft > 25 ? ['H', 'M', 'S'] : lapsLeft > 12 ? ['M', 'H', 'S'] : ['S', 'M', 'H'];
+  const pref = (lapsLeft > 25 ? ['H', 'M', 'S'] : lapsLeft > 12 ? ['M', 'H', 'S'] : ['S', 'M', 'H']).filter((c) =>
+    avail.includes(c as Compound),
+  ) as Compound[];
+  if (car.compoundsUsed.length >= 2) return pref[0]!;
   return pref.find((c) => c !== car.compound)!;
 }
 
@@ -534,10 +571,11 @@ function bestOverall(state: RaceState): number | null {
   return best;
 }
 
-/** Sort by race time (DSQ cars last), then fill position, gap and interval. */
+/** Sort by race time, then retirements (latest first), then DSQ; fill position, gap and interval. */
 function classify(cars: CarState[]): CarState[] {
+  const rank = (c: CarState) => (c.status === 'disqualified' ? 2 : c.status === 'retired' ? 1 : 0);
   const sorted = [...cars].sort(
-    (a, b) => Number(a.status === 'disqualified') - Number(b.status === 'disqualified') || a.totalTime - b.totalTime,
+    (a, b) => rank(a) - rank(b) || (b.retiredLap ?? 0) - (a.retiredLap ?? 0) || a.totalTime - b.totalTime,
   );
   const lead = sorted[0]!.totalTime;
   sorted.forEach((car, i) => {

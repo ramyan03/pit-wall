@@ -4,7 +4,7 @@
  * schema and these types together, and bump `TRACK_SCHEMA_VERSION`.
  */
 
-export const TRACK_SCHEMA_VERSION = 2 as const;
+export const TRACK_SCHEMA_VERSION = 3 as const;
 
 // ---------------------------------------------------------------------------
 // Primitives
@@ -54,6 +54,18 @@ export interface TrackData {
   drivers: DriverEntry[];
   /** Realistic strategy set for AI cars, weighted by historical frequency. */
   strategies: StrategyTemplate[];
+  /** Dry compounds nominated for this race (2011–2015 had two). Omitted = all three. */
+  availableCompounds?: Compound[];
+  /** Era display names per slot, e.g. { S: 'Supersoft' }. Omitted = Soft / Medium / Hard. */
+  compoundNames?: Partial<Record<Compound, string>>;
+  /** What really happened, for "real events" replays. */
+  realEvents?: RealEvents;
+}
+
+export interface RealEvents {
+  incidents: { lap: number; type: 'sc' | 'vsc' | 'red'; laps: number }[];
+  /** `lap` = the lap the car stops on (laps completed + 1). */
+  retirements: { driver: DriverCode; lap: number }[];
 }
 
 export interface TrackMeta {
@@ -228,6 +240,8 @@ export interface CarState {
   pitStops: number;
   /** Set for the player when BOX is pressed. Executed at the end of the lap. */
   pendingBox: Compound | null;
+  /** Lap the car retired on (real-events replays), else null. */
+  retiredLap: number | null;
 }
 
 export interface NeutralisationState {
@@ -241,6 +255,11 @@ export interface RaceConfig {
   difficulty: Difficulty;
   playerDriver: DriverCode;
   playerStrategy: Strategy;
+  /**
+   * Replay the real race's SC/VSC/red flags and retirements (`TrackData.realEvents`) instead of
+   * random incidents. The player's own car never retires.
+   */
+  realEvents?: boolean;
 }
 
 export interface RaceState {
@@ -284,6 +303,7 @@ export type RaceEvent =
   | (EventBase & { type: 'cover'; driver: DriverCode; rival: DriverCode })
   | (EventBase & { type: 'push_done'; driver: DriverCode })
   | (EventBase & { type: 'battery_empty'; driver: DriverCode })
+  | (EventBase & { type: 'retirement'; driver: DriverCode })
   | (EventBase & { type: 'race_finish'; winner: DriverCode });
 
 export type RaceEventType = RaceEvent['type'];

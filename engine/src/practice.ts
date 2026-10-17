@@ -6,7 +6,7 @@
  * Uses its OWN Rng stream (seed mixed with PRACTICE_SALT), so generating practice never
  * changes the race's draws.
  */
-import { tyreLoss } from './race';
+import { availableCompounds, tyreLoss } from './race';
 import { Rng } from './rng';
 import type { Compound, CompoundModel, DriverCode, TrackData } from './types';
 
@@ -52,7 +52,7 @@ export function simulatePractice(track: TrackData, tyres: Record<Compound, Compo
     if (!picked.includes(d)) picked.push(d);
   }
   const runs: PracticeRun[] = [];
-  for (const compound of ['S', 'M', 'H'] as Compound[]) {
+  for (const compound of availableCompounds(track)) {
     const model = tyres[compound];
     for (const d of picked) {
       const length = rng.int(compound === 'S' ? 7 : 10, compound === 'S' ? 11 : 15);
@@ -82,8 +82,9 @@ export interface PracticeEstimate {
   deg: number;
   /** ±1 standard error on deg. */
   degSe: number;
-  /** Fresh-tyre pace vs the Medium, s, compared within each driver. */
+  /** Fresh-tyre pace vs `vs` (the Medium, or the Hard when no Medium ran), s, within each driver. */
   offset: number;
+  vs: Compound;
   /** Clean laps used. */
   laps: number;
 }
@@ -120,13 +121,15 @@ export function analysePractice(session: PracticeSession, fuelSecPerLap: number)
     const sxx = xs.reduce((a, x) => a + x * x, 0);
     const slope = xs.reduce((a, x, i) => a + x * ys[i]!, 0) / sxx;
     const s2 = ys.reduce((a, y, i) => a + (y - slope * xs[i]!) ** 2, 0) / Math.max(1, xs.length - 1 - centred.length);
-    out[c] = { deg: slope, degSe: Math.sqrt(s2 / sxx), offset: 0, laps: xs.length };
+    out[c] = { deg: slope, degSe: Math.sqrt(s2 / sxx), offset: 0, vs: c, laps: xs.length };
     fresh[c] = new Map(centred.map((r) => [r.driver, r.mt - slope * (r.ma - 1)]));
   }
+  const vs: Compound = fresh.M ? 'M' : 'H';
   for (const c of ['S', 'M', 'H'] as Compound[]) {
     const mine = fresh[c];
-    const ref = fresh.M;
+    const ref = fresh[vs];
     if (!out[c] || !mine || !ref) continue;
+    out[c]!.vs = vs;
     const diffs = [...mine].filter(([d]) => ref.has(d)).map(([d, v]) => v - ref.get(d)!);
     if (diffs.length) out[c]!.offset = diffs.reduce((a, b) => a + b, 0) / diffs.length;
   }

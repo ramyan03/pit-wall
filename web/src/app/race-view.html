@@ -38,11 +38,11 @@
           </thead>
           <tbody>
             @for (c of live(); track c.code) {
-              <tr [class.me]="c.isPlayer" [class.dsq]="c.finished && c.car.status === 'disqualified'">
+              <tr [class.me]="c.isPlayer" [class.dsq]="(c.finished && c.car.status === 'disqualified') || c.retired">
                 <td class="num pos">{{ c.position }}</td>
                 <td class="face-cell">
                   <span class="teambar" [style.background]="colour(c.teamId)"></span>
-                  @if (data.photo(c.code); as src) {
+                  @if (data.photo(fullName(c.code)); as src) {
                     <img class="face xs" [src]="src" alt="" />
                   }
                 </td>
@@ -81,7 +81,7 @@
           <div class="card stint">
             <div class="stint-head">
               <div class="me-id" [style.--team]="colour(m.teamId)">
-                @if (data.photo(m.code); as src) {
+                @if (data.photo(fullName(m.code)); as src) {
                   <img class="face sm" [src]="src" [alt]="fullName(m.code)" />
                 }
                 <div>
@@ -331,10 +331,10 @@
             <tbody>
               @for (x of r; track x.car.driver; let i = $index) {
                 <tr [class.me]="x.car.isPlayer">
-                  <td class="num">{{ x.car.status === 'disqualified' ? 'DSQ' : x.car.position }}</td>
+                  <td class="num">{{ x.car.status === 'disqualified' ? 'DSQ' : x.car.status === 'retired' ? 'DNF' : x.car.position }}</td>
                   <td><span class="teambar" [style.background]="colour(x.car.teamId)"></span></td>
                   <td>{{ fullName(x.car.driver) }}</td>
-                  <td class="num">{{ x.car.status === 'disqualified' ? '' : i === 0 ? raceTime(x.car.totalTime) : '+' + x.car.gapToLeader.toFixed(3) }}</td>
+                  <td class="num">{{ x.car.status === 'disqualified' ? '' : x.car.status === 'retired' ? 'Out L' + x.car.retiredLap : i === 0 ? raceTime(x.car.totalTime) : '+' + x.car.gapToLeader.toFixed(3) }}</td>
                   <td>
                     @for (st of x.car.stints; track $index) {
                       <span class="tyre xs" [attr.data-c]="st.compound">{{ st.compound }}</span>

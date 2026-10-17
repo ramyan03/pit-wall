@@ -15,6 +15,7 @@ import { DataService } from './data';
           <li>Results, grid, lap times and pit stops: <a href="https://jolpi.ca" target="_blank" rel="noopener">Jolpica</a> (Ergast-compatible F1 API).</li>
           <li>Circuit outlines: <a href="https://github.com/bacinger/f1-circuits" target="_blank" rel="noopener">bacinger/f1-circuits</a>, MIT licence, © Tomislav Bacinger.</li>
           <li>Tyre wear, temperatures, sector splits and incident rates are <strong>manual estimates</strong>, not fitted data, until the FastF1 pipeline can reach F1 live timing.</li>
+          <li>Classics (2011–2025): safety-car and VSC laps come from contemporary race reports; retirements from Jolpica. Era tyre models are estimates.</li>
           <li>Race engineers and their radio lines are fictional.</li>
           <li>Unofficial fan project. Not associated with Formula 1, the FIA or any team. Names, logos and marks belong to their owners. Private use only.</li>
         </ul>

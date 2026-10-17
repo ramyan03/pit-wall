@@ -18,11 +18,16 @@ export interface TrackIndexEntry {
   lengthM: number | null;
   trackTempC: number;
   airTempC: number;
-  allocation: Record<'S' | 'M' | 'H', string>;
+  /** Nominated compounds only: a C-number, or the era's name for classics. */
+  allocation: Partial<Record<'S' | 'M' | 'H', string>>;
   /** Wear severity vs baseline (1 = medium). Manual estimate. */
   wear: number;
   winner: string;
   file: string;
+  /** Classics (2011–2025 strategy races) only. */
+  classic?: boolean;
+  season?: number;
+  blurb?: string;
 }
 
 export interface Circuit {
@@ -50,6 +55,7 @@ export interface MediaCredit {
 }
 
 export interface Credits {
+  /** Keyed by full name (driver codes repeat across eras). */
   drivers: Record<string, MediaCredit>;
   teams: Record<string, MediaCredit>;
 }
@@ -91,8 +97,9 @@ export class DataService {
     return getJson<RealResult>(`tracks/${id}.real.json`).catch(() => null);
   }
 
-  photo(code: string): string | null {
-    return this.credits().drivers[code]?.path ?? null;
+  /** Driver photo by full name. */
+  photo(fullName: string | undefined): string | null {
+    return fullName ? (this.credits().drivers[fullName]?.path ?? null) : null;
   }
   logo(teamId: string): string | null {
     return this.credits().teams[teamId]?.path ?? null;

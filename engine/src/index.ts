@@ -6,6 +6,7 @@ export {
   applyCommand,
   simulateRace,
   runToFinish,
+  availableCompounds,
   naturalLapTime,
   tyreLoss,
   tempMult,

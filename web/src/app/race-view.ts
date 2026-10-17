@@ -4,9 +4,8 @@ import { CircuitMap, type MapDot } from './circuit-map';
 import { DataService } from './data';
 import { MAX_SPEED, MIN_SPEED, RaceStore, type LiveCar, type Speed } from './race-store';
 import { ENGINEERS } from './radio';
+import { compoundNames, compoundsOf } from './tyres';
 import { wearReadout } from './visibility';
-
-const NAME: Record<Compound, string> = { S: 'Soft', M: 'Medium', H: 'Hard' };
 
 interface Bar {
   lap: number;
@@ -28,8 +27,13 @@ export class RaceView {
   protected readonly data = inject(DataService);
   readonly exit = output<'circuits' | 'prerace'>();
 
-  protected readonly compounds: Compound[] = ['S', 'M', 'H'];
-  protected readonly name = NAME;
+  /** Nominated compounds and their era names (classics differ). */
+  protected get compounds(): Compound[] {
+    return compoundsOf(this.track());
+  }
+  protected get name(): Record<Compound, string> {
+    return compoundNames(this.track());
+  }
   protected readonly paceModes: PaceMode[] = ['push', 'neutral', 'conserve'];
   protected readonly ersModes: { mode: ErsMode; label: string; title: string }[] = [
     { mode: 'attack', label: 'Attack', title: 'Spend charge: quicker and better at passing' },
@@ -81,9 +85,7 @@ export class RaceView {
     if (c) return c;
     const me = this.me()?.car;
     if (!me) return 'H';
-    const hint = this.store.hint()?.windows[0]?.compound;
-    if (hint) return hint;
-    return me.compound === 'H' ? 'M' : 'H';
+    return this.store.suggestedCompound();
   });
   protected choose(c: Compound): void {
     this.chosen.set(c);
@@ -92,7 +94,7 @@ export class RaceView {
   protected readonly dots = computed<MapDot[]>(() => {
     const live = this.live();
     const me = this.me();
-    return live.map((c) => ({
+    return live.filter((c) => !c.retired).map((c) => ({
       code: c.code,
       colour: this.teams().get(c.teamId)?.colour ?? '#999',
       fraction: c.lapFraction,
@@ -106,7 +108,8 @@ export class RaceView {
     const live = this.live();
     const me = this.me();
     if (!me) return { ahead: null, behind: null };
-    return { ahead: live[me.position - 2] ?? null, behind: live[me.position] ?? null };
+    const behind = live[me.position];
+    return { ahead: live[me.position - 2] ?? null, behind: behind && !behind.retired ? behind : null };
   });
 
   protected readonly wear = computed(() => {
@@ -192,6 +195,7 @@ export class RaceView {
 
   protected gapText(c: LiveCar): string {
     if (c.car.status === 'disqualified' && c.finished) return 'DSQ';
+    if (c.retired) return 'OUT';
     const v = this.showGap() ? c.gap : c.interval;
     if (c.position === 1) return this.showGap() ? 'Leader' : 'Interval';
     return v === null ? '' : `+${v.toFixed(3)}`;
@@ -217,6 +221,7 @@ export class RaceView {
       difficulty: s0.config.difficulty,
       playerDriver: s0.config.playerDriver,
       startCompound: s0.config.playerStrategy.startCompound,
+      realEvents: !!s0.config.realEvents,
     });
   }
 }

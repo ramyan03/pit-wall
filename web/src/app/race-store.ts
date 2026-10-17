@@ -30,6 +30,7 @@ import {
   type TrackData,
 } from '@pit-wall/engine';
 import { readRivals, type ReadKind } from './chatter';
+import { compoundNames, compoundsOf } from './tyres';
 import type { Circuit, RealResult } from './data';
 import { finishLine, firstName, gapUpdate, radioFor, type RadioContext, type RadioLine } from './radio';
 import type { HintResponse, WorkerRequest } from './strategy.worker';
@@ -73,6 +74,8 @@ export interface RaceSetup {
   difficulty: Difficulty;
   playerDriver: string;
   startCompound: Compound;
+  /** Replay the real race's SC/VSC and retirements (classics only). */
+  realEvents: boolean;
 }
 
 export type SectorColour = 'purple' | 'green' | 'yellow' | 'none';
@@ -96,6 +99,8 @@ export interface LiveCar {
   interval: number | null;
   inPitLap: boolean;
   finished: boolean;
+  /** Out of the race (real-events replays). */
+  retired: boolean;
   position: number;
 }
 
@@ -155,7 +160,8 @@ export class RaceStore {
       const code = c0.driver;
       let L = 0;
       for (let i = hist.length - 1; i >= 0; i--) {
-        if (byLap[i]!.get(code)!.totalTime <= T) {
+        const st = byLap[i]!.get(code)!;
+        if (st.status !== 'retired' && st.totalTime <= T) {
           L = i;
           break;
         }
@@ -163,10 +169,12 @@ export class RaceStore {
       const done = byLap[L]!.get(code)!;
       const next = byLap[L + 1]?.get(code) ?? null;
       const finished = L >= total;
+      // A retired car stops at the line where it retired.
+      const retired = next?.status === 'retired' && T >= done.totalTime;
       let k = 0;
       let lapFraction = 0;
       let cross = done.totalTime;
-      if (!finished && next?.lastSectors) {
+      if (!finished && !retired && next?.lastSectors) {
         const elapsed = Math.max(0, T - done.totalTime);
         let acc = 0;
         while (k < 2 && acc + next.lastSectors[k]! <= elapsed) acc += next.lastSectors[k++]!;
@@ -174,10 +182,11 @@ export class RaceStore {
         lapFraction = dist[k]! + Math.min(1, (elapsed - acc) / next.lastSectors[k]!) * f[k]!;
       }
       if (T < done.totalTime) lapFraction = 0; // on the grid
-      return { code, L, k, cross, done, next, finished, lapFraction };
+      return { code, L, k, cross, done, next, finished, retired, lapFraction };
     });
 
-    const line = (r: { L: number; k: number; finished: boolean }) => (r.finished ? total * 3 : r.L * 3 + r.k);
+    const line = (r: { L: number; k: number; finished: boolean; retired: boolean }) =>
+      r.retired ? -1 : r.finished ? total * 3 : r.L * 3 + r.k;
     rows.sort((a, b) => line(b) - line(a) || a.cross - b.cross);
 
     // Crossing time of a timing line for a car that has passed it.
@@ -194,8 +203,9 @@ export class RaceStore {
     const started = T >= Math.min(...hist[0]!.cars.map((c) => c.totalTime));
     return rows.map((r, i) => {
       const myLine = line(r);
-      const gap = !started || i === 0 ? null : r.cross - crossAt(leader.code, myLine);
-      const interval = !started || i === 0 ? null : r.cross - crossAt(rows[i - 1]!.code, myLine);
+      const timed = started && i > 0 && !r.retired;
+      const gap = timed ? r.cross - crossAt(leader.code, myLine) : null;
+      const interval = timed ? r.cross - crossAt(rows[i - 1]!.code, myLine) : null;
       // Sector colours vs personal best / overall best before this lap.
       const pbState = byLap[r.L]!.get(r.code)!;
       const overall = [0, 1, 2].map((j) => Math.min(...[...byLap[r.L]!.values()].map((c) => c.bestSectors[j] ?? Infinity)));
@@ -227,6 +237,7 @@ export class RaceStore {
         interval,
         inPitLap: pitted && r.k === 2,
         finished: r.finished,
+        retired: r.retired,
         position: i + 1,
       };
     });
@@ -263,7 +274,7 @@ export class RaceStore {
 
   readonly finishedAll = computed(() => {
     const live = this.live();
-    return live.length > 0 && live.every((c) => c.finished);
+    return live.length > 0 && live.every((c) => c.finished || c.retired);
   });
 
   // ---------------------------------------------------------------------------
@@ -285,6 +296,7 @@ export class RaceStore {
       difficulty: setup.difficulty,
       playerDriver: setup.playerDriver,
       playerStrategy: { startCompound: setup.startCompound, stops: [], neutralisedPitWindow: 0 },
+      realEvents: setup.realEvents,
     });
   }
 
@@ -419,8 +431,9 @@ export class RaceStore {
     const hinted = this.hint()?.windows[0]?.compound;
     if (hinted && ruleOk(hinted)) return hinted;
     const left = total - this.leaderLap();
-    const pref: Compound[] = left > total * 0.45 ? ['H', 'M', 'S'] : left > total * 0.25 ? ['M', 'H', 'S'] : ['S', 'M', 'H'];
-    return pref.find(ruleOk)!;
+    const avail = compoundsOf(this.track());
+    const pref = (left > total * 0.45 ? ['H', 'M', 'S'] : left > total * 0.25 ? ['M', 'H', 'S'] : ['S', 'M', 'H']) as Compound[];
+    return pref.filter((c) => avail.includes(c)).find(ruleOk)!;
   }
 
   answer(i: number): void {
@@ -613,6 +626,7 @@ export class RaceStore {
       meName: firstName(this.track()!.drivers.find((d) => d.code === meLive.code)!.fullName),
       state,
       names: new Map(this.track()!.drivers.map((d) => [d.code, d.fullName])),
+      tyreNames: compoundNames(this.track()),
     };
     const lines: RadioLine[] = [];
     let slow: string | null = null;
@@ -701,7 +715,7 @@ export class RaceStore {
     if (me.status !== 'running' || this.pendingBox()) return;
     const left = ctx.state.totalLaps - e.lap;
     const c = this.suggestedCompound();
-    const tyre = { S: 'softs', M: 'mediums', H: 'hards' }[c];
+    const tyre = compoundNames(this.track())[c].toLowerCase() + 's';
     if ((e.type === 'sc_deployed' || e.type === 'vsc_deployed') && me.tyreAge >= 5 && left > 3) {
       const sc = e.type === 'sc_deployed' ? 'Safety car' : 'VSC';
       this.ask('neutralised', t, e.lap, `${sc}. A stop is cheap now. Box for ${tyre}?`, [

@@ -1,0 +1,471 @@
+{
+  "schemaVersion": 3,
+  "meta": {
+    "season": 2014,
+    "round": 3,
+    "eventName": "Bahrain Grand Prix",
+    "trackId": "2014-bahrain",
+    "laps": 57,
+    "synthetic": false,
+    "source": {
+      "fastf1Version": null,
+      "generatedAt": "2026-10-17T17:35:47+00:00",
+      "incidentSeasons": []
+    }
+  },
+  "conditions": {
+    "airTempC": 23,
+    "trackTempC": 29,
+    "refTempC": 29
+  },
+  "compoundAllocation": {
+    "S": "C3",
+    "M": "C3",
+    "H": "C2"
+  },
+  "tyres": {
+    "S": {
+      "compoundOffset": -0.42,
+      "degRate": 0.099,
+      "cliffLap": 15,
+      "cliffK": 0.03,
+      "tempSens": 0.012,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    },
+    "M": {
+      "compoundOffset": 0.0,
+      "degRate": 0.0605,
+      "cliffLap": 26,
+      "cliffK": 0.02,
+      "tempSens": 0.01,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    },
+    "H": {
+      "compoundOffset": 0.28,
+      "degRate": 0.0385,
+      "cliffLap": 37,
+      "cliffK": 0.012,
+      "tempSens": 0.008,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    }
+  },
+  "priorTyres": null,
+  "fuel": {
+    "fuelSecPerLap": 0.045
+  },
+  "trackEvo": 0.01,
+  "noiseSigma": 0.3,
+  "sectorFractions": [
+    0.31,
+    0.4,
+    0.29
+  ],
+  "pit": {
+    "pitLoss": 18.94,
+    "stationaryMean": 2.4,
+    "slowStopProb": 0.05,
+    "slowStopExtra": [
+      1.0,
+      3.0
+    ]
+  },
+  "traffic": {
+    "followGap": 1.0,
+    "overtakeDelta": 0.9,
+    "overtakeProb": 0.1
+  },
+  "incidents": {
+    "scHazardPerLap": 0.012,
+    "vscHazardPerLap": 0.012,
+    "redHazardPerLap": 0.002,
+    "scDurationLaps": [
+      3,
+      6
+    ],
+    "vscDurationLaps": [
+      1,
+      3
+    ],
+    "scCompressedGap": 0.8,
+    "lapTimeMult": {
+      "sc": 1.4,
+      "vsc": 1.35
+    },
+    "pitLossMult": {
+      "sc": 0.5,
+      "vsc": 0.6
+    }
+  },
+  "teams": [
+    {
+      "id": "mercedes",
+      "name": "Mercedes",
+      "colour": "#00D2BE"
+    },
+    {
+      "id": "force-india",
+      "name": "Force India",
+      "colour": "#FF5F0F"
+    },
+    {
+      "id": "red-bull",
+      "name": "Red Bull Racing",
+      "colour": "#1E41FF"
+    },
+    {
+      "id": "williams",
+      "name": "Williams",
+      "colour": "#005AFF"
+    },
+    {
+      "id": "ferrari",
+      "name": "Ferrari",
+      "colour": "#E8002D"
+    },
+    {
+      "id": "toro-rosso",
+      "name": "Toro Rosso",
+      "colour": "#469BFF"
+    },
+    {
+      "id": "lotus-f1",
+      "name": "Lotus",
+      "colour": "#FFB800"
+    },
+    {
+      "id": "marussia",
+      "name": "Marussia",
+      "colour": "#6E0000"
+    },
+    {
+      "id": "caterham",
+      "name": "Caterham",
+      "colour": "#0A7C2F"
+    },
+    {
+      "id": "mclaren",
+      "name": "McLaren",
+      "colour": "#8F8F8F"
+    },
+    {
+      "id": "sauber",
+      "name": "Sauber",
+      "colour": "#9B9B9B"
+    }
+  ],
+  "drivers": [
+    {
+      "code": "HAM",
+      "number": 44,
+      "teamId": "mercedes",
+      "fullName": "Lewis Hamilton",
+      "basePace": 98.409,
+      "gridPosition": 2
+    },
+    {
+      "code": "ROS",
+      "number": 6,
+      "teamId": "mercedes",
+      "fullName": "Nico Rosberg",
+      "basePace": 98.711,
+      "gridPosition": 1
+    },
+    {
+      "code": "PER",
+      "number": 11,
+      "teamId": "force-india",
+      "fullName": "Sergio Pérez",
+      "basePace": 99.318,
+      "gridPosition": 4
+    },
+    {
+      "code": "RIC",
+      "number": 3,
+      "teamId": "red-bull",
+      "fullName": "Daniel Ricciardo",
+      "basePace": 99.82,
+      "gridPosition": 13
+    },
+    {
+      "code": "HUL",
+      "number": 27,
+      "teamId": "force-india",
+      "fullName": "Nico Hülkenberg",
+      "basePace": 99.521,
+      "gridPosition": 11
+    },
+    {
+      "code": "VET",
+      "number": 5,
+      "teamId": "red-bull",
+      "fullName": "Sebastian Vettel",
+      "basePace": 99.696,
+      "gridPosition": 10
+    },
+    {
+      "code": "MAS",
+      "number": 19,
+      "teamId": "williams",
+      "fullName": "Felipe Massa",
+      "basePace": 99.505,
+      "gridPosition": 7
+    },
+    {
+      "code": "BOT",
+      "number": 77,
+      "teamId": "williams",
+      "fullName": "Valtteri Bottas",
+      "basePace": 99.447,
+      "gridPosition": 3
+    },
+    {
+      "code": "ALO",
+      "number": 14,
+      "teamId": "ferrari",
+      "fullName": "Fernando Alonso",
+      "basePace": 99.769,
+      "gridPosition": 9
+    },
+    {
+      "code": "RAI",
+      "number": 7,
+      "teamId": "ferrari",
+      "fullName": "Kimi Räikkönen",
+      "basePace": 100.056,
+      "gridPosition": 5
+    },
+    {
+      "code": "KVY",
+      "number": 26,
+      "teamId": "toro-rosso",
+      "fullName": "Daniil Kvyat",
+      "basePace": 100.445,
+      "gridPosition": 12
+    },
+    {
+      "code": "GRO",
+      "number": 8,
+      "teamId": "lotus-f1",
+      "fullName": "Romain Grosjean",
+      "basePace": 100.32,
+      "gridPosition": 16
+    },
+    {
+      "code": "CHI",
+      "number": 4,
+      "teamId": "marussia",
+      "fullName": "Max Chilton",
+      "basePace": 101.77,
+      "gridPosition": 21
+    },
+    {
+      "code": "MAL",
+      "number": 13,
+      "teamId": "lotus-f1",
+      "fullName": "Pastor Maldonado",
+      "basePace": 100.328,
+      "gridPosition": 17
+    },
+    {
+      "code": "KOB",
+      "number": 10,
+      "teamId": "caterham",
+      "fullName": "Kamui Kobayashi",
+      "basePace": 101.715,
+      "gridPosition": 18
+    },
+    {
+      "code": "BIA",
+      "number": 17,
+      "teamId": "marussia",
+      "fullName": "Jules Bianchi",
+      "basePace": 102.992,
+      "gridPosition": 19
+    },
+    {
+      "code": "BUT",
+      "number": 22,
+      "teamId": "mclaren",
+      "fullName": "Jenson Button",
+      "basePace": 99.578,
+      "gridPosition": 6
+    },
+    {
+      "code": "MAG",
+      "number": 20,
+      "teamId": "mclaren",
+      "fullName": "Kevin Magnussen",
+      "basePace": 99.791,
+      "gridPosition": 8
+    },
+    {
+      "code": "GUT",
+      "number": 21,
+      "teamId": "sauber",
+      "fullName": "Esteban Gutiérrez",
+      "basePace": 100.61,
+      "gridPosition": 15
+    },
+    {
+      "code": "ERI",
+      "number": 9,
+      "teamId": "caterham",
+      "fullName": "Marcus Ericsson",
+      "basePace": 101.407,
+      "gridPosition": 20
+    },
+    {
+      "code": "VER",
+      "number": 25,
+      "teamId": "toro-rosso",
+      "fullName": "Jean-Éric Vergne",
+      "basePace": 101.333,
+      "gridPosition": 14
+    },
+    {
+      "code": "SUT",
+      "number": 99,
+      "teamId": "sauber",
+      "fullName": "Adrian Sutil",
+      "basePace": 101.374,
+      "gridPosition": 22
+    }
+  ],
+  "strategies": [
+    {
+      "id": "1stop-SH",
+      "stints": [
+        "S",
+        "H"
+      ],
+      "pitLaps": [
+        14
+      ],
+      "pitLapJitter": 4,
+      "weight": 1
+    },
+    {
+      "id": "2stop-SSH",
+      "stints": [
+        "S",
+        "S",
+        "H"
+      ],
+      "pitLaps": [
+        16,
+        35
+      ],
+      "pitLapJitter": 3,
+      "weight": 11
+    },
+    {
+      "id": "3stop-SSSH",
+      "stints": [
+        "S",
+        "S",
+        "S",
+        "H"
+      ],
+      "pitLaps": [
+        12,
+        28,
+        40
+      ],
+      "pitLapJitter": 3,
+      "weight": 8
+    },
+    {
+      "id": "4stop-SHSSS",
+      "stints": [
+        "S",
+        "H",
+        "S",
+        "S",
+        "S"
+      ],
+      "pitLaps": [
+        19,
+        39,
+        42,
+        47
+      ],
+      "pitLapJitter": 3,
+      "weight": 1
+    },
+    {
+      "id": "5stop-SSSSSH",
+      "stints": [
+        "S",
+        "S",
+        "S",
+        "S",
+        "S",
+        "H"
+      ],
+      "pitLaps": [
+        10,
+        13,
+        18,
+        31,
+        40
+      ],
+      "pitLapJitter": 3,
+      "weight": 1
+    }
+  ],
+  "availableCompounds": [
+    "S",
+    "H"
+  ],
+  "compoundNames": {
+    "S": "Soft",
+    "H": "Medium"
+  },
+  "realEvents": {
+    "incidents": [
+      {
+        "lap": 41,
+        "type": "sc",
+        "laps": 6
+      }
+    ],
+    "retirements": [
+      {
+        "driver": "BUT",
+        "lap": 56
+      },
+      {
+        "driver": "MAG",
+        "lap": 41
+      },
+      {
+        "driver": "GUT",
+        "lap": 40
+      },
+      {
+        "driver": "ERI",
+        "lap": 34
+      },
+      {
+        "driver": "VER",
+        "lap": 19
+      },
+      {
+        "driver": "SUT",
+        "lap": 18
+      }
+    ]
+  }
+}

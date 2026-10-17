@@ -1214,3 +1214,12 @@ td {
     grid-template-columns: auto 56px 1fr;
   }
 }
+
+.picker-section {
+  margin: 28px 0 12px;
+  font-size: 16px;
+}
+.circuit-card.classic .cc-blurb {
+  color: var(--ink-2);
+  line-height: 1.35;
+}

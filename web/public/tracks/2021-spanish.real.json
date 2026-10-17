@@ -1,0 +1,222 @@
+{
+  "results": [
+    {
+      "code": "HAM",
+      "position": 1,
+      "grid": 1,
+      "status": "Finished",
+      "time": "1:33:07.680"
+    },
+    {
+      "code": "VER",
+      "position": 2,
+      "grid": 2,
+      "status": "Finished",
+      "time": "+15.841"
+    },
+    {
+      "code": "BOT",
+      "position": 3,
+      "grid": 3,
+      "status": "Finished",
+      "time": "+26.610"
+    },
+    {
+      "code": "LEC",
+      "position": 4,
+      "grid": 4,
+      "status": "Finished",
+      "time": "+54.616"
+    },
+    {
+      "code": "PER",
+      "position": 5,
+      "grid": 8,
+      "status": "Finished",
+      "time": "+1:03.671"
+    },
+    {
+      "code": "RIC",
+      "position": 6,
+      "grid": 7,
+      "status": "Finished",
+      "time": "+1:13.768"
+    },
+    {
+      "code": "SAI",
+      "position": 7,
+      "grid": 6,
+      "status": "Finished",
+      "time": "+1:14.670"
+    },
+    {
+      "code": "NOR",
+      "position": 8,
+      "grid": 9,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "OCO",
+      "position": 9,
+      "grid": 5,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "GAS",
+      "position": 10,
+      "grid": 12,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "STR",
+      "position": 11,
+      "grid": 11,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "RAI",
+      "position": 12,
+      "grid": 17,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "VET",
+      "position": 13,
+      "grid": 13,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "RUS",
+      "position": 14,
+      "grid": 15,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "GIO",
+      "position": 15,
+      "grid": 14,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "LAT",
+      "position": 16,
+      "grid": 19,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "ALO",
+      "position": 17,
+      "grid": 10,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "MSC",
+      "position": 18,
+      "grid": 18,
+      "status": "+2 Laps",
+      "time": null
+    },
+    {
+      "code": "MAZ",
+      "position": 19,
+      "grid": 20,
+      "status": "+2 Laps",
+      "time": null
+    },
+    {
+      "code": "TSU",
+      "position": 20,
+      "grid": 16,
+      "status": "Electrical",
+      "time": null
+    }
+  ],
+  "pitLaps": {
+    "GIO": [
+      8,
+      39
+    ],
+    "RUS": [
+      9,
+      28
+    ],
+    "LAT": [
+      9,
+      27,
+      50
+    ],
+    "GAS": [
+      18,
+      47
+    ],
+    "ALO": [
+      21,
+      61
+    ],
+    "VET": [
+      21,
+      38
+    ],
+    "SAI": [
+      22,
+      46
+    ],
+    "STR": [
+      22,
+      39
+    ],
+    "MAZ": [
+      22,
+      42
+    ],
+    "BOT": [
+      23,
+      53
+    ],
+    "OCO": [
+      23
+    ],
+    "NOR": [
+      23,
+      51
+    ],
+    "MSC": [
+      23,
+      50
+    ],
+    "VER": [
+      24,
+      60
+    ],
+    "RIC": [
+      25,
+      46
+    ],
+    "PER": [
+      27,
+      57
+    ],
+    "HAM": [
+      28,
+      42
+    ],
+    "LEC": [
+      28,
+      58
+    ],
+    "RAI": [
+      37
+    ]
+  },
+  "source": "Jolpica (Ergast API)"
+}

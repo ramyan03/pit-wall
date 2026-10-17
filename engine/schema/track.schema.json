@@ -25,7 +25,7 @@
   ],
   "properties": {
     "schemaVersion": {
-      "const": 2
+      "const": 3
     },
     "meta": {
       "type": "object",
@@ -42,7 +42,7 @@
       "properties": {
         "season": {
           "type": "integer",
-          "minimum": 2018
+          "minimum": 2011
         },
         "round": {
           "type": "integer",
@@ -380,6 +380,92 @@
           "weight": {
             "type": "number",
             "exclusiveMinimum": 0
+          }
+        }
+      }
+    },
+    "availableCompounds": {
+      "description": "Dry compounds nominated for this race (2011–2015 had two). Omitted = all three.",
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/compound"
+      }
+    },
+    "compoundNames": {
+      "description": "Display name per slot for the era, e.g. {\"S\": \"Supersoft\"}. Omitted = Soft/Medium/Hard.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "S": {
+          "type": "string"
+        },
+        "M": {
+          "type": "string"
+        },
+        "H": {
+          "type": "string"
+        }
+      }
+    },
+    "realEvents": {
+      "description": "What really happened, for 'real events' replays: neutralisations and retirements.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "incidents",
+        "retirements"
+      ],
+      "properties": {
+        "incidents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "lap",
+              "type",
+              "laps"
+            ],
+            "properties": {
+              "lap": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "type": {
+                "enum": [
+                  "sc",
+                  "vsc",
+                  "red"
+                ]
+              },
+              "laps": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "retirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "driver",
+              "lap"
+            ],
+            "properties": {
+              "driver": {
+                "type": "string"
+              },
+              "lap": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The lap the car stops on (laps completed + 1)."
+              }
+            }
           }
         }
       }

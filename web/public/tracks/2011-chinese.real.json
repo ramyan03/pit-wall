@@ -1,0 +1,281 @@
+{
+  "results": [
+    {
+      "code": "HAM",
+      "position": 1,
+      "grid": 3,
+      "status": "Finished",
+      "time": "1:36:58.226"
+    },
+    {
+      "code": "VET",
+      "position": 2,
+      "grid": 1,
+      "status": "Finished",
+      "time": "+5.198"
+    },
+    {
+      "code": "WEB",
+      "position": 3,
+      "grid": 18,
+      "status": "Finished",
+      "time": "+7.555"
+    },
+    {
+      "code": "BUT",
+      "position": 4,
+      "grid": 2,
+      "status": "Finished",
+      "time": "+10.000"
+    },
+    {
+      "code": "ROS",
+      "position": 5,
+      "grid": 4,
+      "status": "Finished",
+      "time": "+13.448"
+    },
+    {
+      "code": "MAS",
+      "position": 6,
+      "grid": 6,
+      "status": "Finished",
+      "time": "+15.840"
+    },
+    {
+      "code": "ALO",
+      "position": 7,
+      "grid": 5,
+      "status": "Finished",
+      "time": "+30.622"
+    },
+    {
+      "code": "MSC",
+      "position": 8,
+      "grid": 14,
+      "status": "Finished",
+      "time": "+31.026"
+    },
+    {
+      "code": "PET",
+      "position": 9,
+      "grid": 10,
+      "status": "Finished",
+      "time": "+57.404"
+    },
+    {
+      "code": "KOB",
+      "position": 10,
+      "grid": 13,
+      "status": "Finished",
+      "time": "+1:03.273"
+    },
+    {
+      "code": "DIR",
+      "position": 11,
+      "grid": 8,
+      "status": "Finished",
+      "time": "+1:08.757"
+    },
+    {
+      "code": "HEI",
+      "position": 12,
+      "grid": 16,
+      "status": "Finished",
+      "time": "+1:12.739"
+    },
+    {
+      "code": "BAR",
+      "position": 13,
+      "grid": 15,
+      "status": "Finished",
+      "time": "+1:30.189"
+    },
+    {
+      "code": "BUE",
+      "position": 14,
+      "grid": 9,
+      "status": "Finished",
+      "time": "+1:30.671"
+    },
+    {
+      "code": "SUT",
+      "position": 15,
+      "grid": 11,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "KOV",
+      "position": 16,
+      "grid": 19,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "PER",
+      "position": 17,
+      "grid": 12,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "MAL",
+      "position": 18,
+      "grid": 17,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "TRU",
+      "position": 19,
+      "grid": 20,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "DAM",
+      "position": 20,
+      "grid": 21,
+      "status": "+2 Laps",
+      "time": null
+    },
+    {
+      "code": "GLO",
+      "position": 21,
+      "grid": 22,
+      "status": "+2 Laps",
+      "time": null
+    },
+    {
+      "code": "LIU",
+      "position": 22,
+      "grid": 23,
+      "status": "+2 Laps",
+      "time": null
+    },
+    {
+      "code": "KAR",
+      "position": 23,
+      "grid": 24,
+      "status": "+2 Laps",
+      "time": null
+    },
+    {
+      "code": "ALG",
+      "position": 24,
+      "grid": 7,
+      "status": "Wheel",
+      "time": null
+    }
+  ],
+  "pitLaps": {
+    "ALG": [
+      9
+    ],
+    "LIU": [
+      9,
+      21,
+      45
+    ],
+    "MSC": [
+      10,
+      26,
+      39
+    ],
+    "WEB": [
+      10,
+      25,
+      40
+    ],
+    "MAL": [
+      10,
+      25,
+      40
+    ],
+    "DIR": [
+      11,
+      32
+    ],
+    "ROS": [
+      12,
+      25,
+      39
+    ],
+    "BUE": [
+      12,
+      16,
+      33
+    ],
+    "BUT": [
+      14,
+      24,
+      37
+    ],
+    "VET": [
+      14,
+      31
+    ],
+    "KOB": [
+      14,
+      30
+    ],
+    "MAS": [
+      15,
+      33
+    ],
+    "HAM": [
+      15,
+      25,
+      38
+    ],
+    "SUT": [
+      15,
+      30,
+      47
+    ],
+    "ALO": [
+      16,
+      32
+    ],
+    "PER": [
+      16,
+      36,
+      48,
+      50
+    ],
+    "BAR": [
+      16,
+      35
+    ],
+    "GLO": [
+      16,
+      28,
+      39
+    ],
+    "PET": [
+      17,
+      37
+    ],
+    "HEI": [
+      18,
+      30
+    ],
+    "KOV": [
+      19,
+      40
+    ],
+    "TRU": [
+      20,
+      42
+    ],
+    "DAM": [
+      20,
+      34
+    ],
+    "KAR": [
+      23
+    ]
+  },
+  "source": "Jolpica (Ergast API)"
+}

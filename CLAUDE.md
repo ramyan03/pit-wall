@@ -4,8 +4,10 @@ A browser-based F1 **race-strategy** game. No driving. A race plays at 1/10 real
 (~10 s a lap, sector-by-sector live timing, car dots moving on the real circuit outline;
 ¼×–30× slider, pausable). The player watches a timing tower, sector and lap times, gaps
 and tyre ages, and decides **when to pit, which compound to fit, and the pace mode**.
-Tracks are built from real 2026 races. Today that's Jolpica data plus manual tyre
-estimates (FastF1 live timing returns 401). The FastF1 fit is the goal (PLAN.md D1/D2).
+Tracks are built from real 2026 races, plus 15 **classics** (one strategy race per season,
+2011–2025) that can replay the real safety cars and retirements. Today that's Jolpica data
+plus manual tyre estimates (FastF1 live timing returns 401). The FastF1 fit is the goal
+(PLAN.md D1/D2).
 
 **What makes it different:** in Hard mode tyre wear % is never shown. You read wear from
 lap times, like a real strategist.
@@ -104,7 +106,7 @@ tempMult = 1 + tempSens × (trackTemp − refTemp)
 - **AI cars:** each picks a `StrategyTemplate`, weighted by historical `weight`, and jitters
   each pit lap by ±`pitLapJitter`. It pits under SC/VSC if within `neutralisedPitWindow`
   laps of a planned stop.
-- **Grid:** 2026: 22 cars, 11 teams (Cadillac joined).
+- **Grid:** 2026: 22 cars, 11 teams (Cadillac joined). Classics: 19–24 cars.
 - **Out-lap:** the first lap on a new set (or after a red-flag restart) costs
   `WARMUP_PENALTY[c]` (Hard slowest). With pit-exit traffic and the fresh-tyre delta, that is
   what makes the undercut/overcut work.
@@ -161,8 +163,25 @@ For each race, fit from FastF1 laps:
   from bacinger/f1-circuits (MIT), `.real.json` real result, `index.json`) and fetches
   Commons media. Tyres, temps, sector splits and SC rates come from its `PROFILES` table:
   **manual estimates** (`fit.method: manual`). Red-flag tyre changes are filtered out of
-  the strategy templates.
-- The dev server reloads every open tab when `web/public` changes, so don't run the builder mid-race.
+  the strategy templates. AI templates are one per real stop count at the median laps;
+  compounds are guessed (Jolpica has no tyre data): longest stint hardest, shortest softest.
+- **Classics:** `python -m pitwall.build_jolpica --classics` builds the `CLASSICS` table
+  (`--rounds 2013 2015` = just those seasons). Each entry overrides its circuit profile for
+  the era: approximate C-scale allocation + era names (`compoundNames`), two nominated
+  compounds 2011–15 (`availableCompounds`, in the S and H slots), deg, cliff (`life`), slot
+  gap, and the real SC/VSC laps (researched from race reports). Retirements come from
+  Jolpica into `realEvents`. Non-starters (Withdrew/DNS) are left off the grid. Historical
+  team colours live in `TEAM_COLOUR_BY_SEASON`.
+- **Real events** (`RaceConfig.realEvents`, classics only, on by default): neutralisations
+  from `realEvents.incidents` on their real laps (no random draws, any difficulty) and AI
+  retirements at the start of their lap. The player's car never retires. Strategy sims in the
+  worker always use random incidents, so hints can't see the future.
+- Media is keyed by **full name** in `credits.json` (codes repeat across eras: VER, MSC, HAR).
+  The builder merges into the existing manifest and skips media it already has.
+- The dev server reloads every open tab when `web/public` changes, so don't run the builder
+  mid-race. To build without touching a running game, set `WEB_PUBLIC` to a staging dir
+  (seeded with `tracks/index.json` + `media/`) and copy over later.
+- Windows console: run the builder with `PYTHONIOENCODING=utf-8` (its log prints "→").
 
 ## Key files
 
@@ -176,6 +195,8 @@ For each race, fit from FastF1 laps:
 - `web/src/app/race-store.ts`: live playback (race clock, sector timing, BOX re-sim, radio)
 - `web/src/app/visibility.ts`: the single Hard-mode hidden-info selector (convention #4)
 - `web/src/app/radio.ts`: fictional engineers + radio lines
+- `web/src/app/tyres.ts`: nominated compounds + era names per track (use it, never hard-code S/M/H)
+- `engine/test/real-events.test.ts`: real SC/VSC replay, retirements, nominated compounds
 - `web/src/app/chatter.ts`: engineer reads on rivals (going long, two-stop, pace dropping,
   closing/catching) from timing-screen info only. Safe in Hard mode.
 - Radio decisions live in `race-store.ts` (`ask` / `maybeDecide` / `answer`). The worker's

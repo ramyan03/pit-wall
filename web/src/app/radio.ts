@@ -16,6 +16,21 @@ export const ENGINEERS: Record<string, string> = {
   williams: 'Owen Price',
   'aston-martin': 'Harriet Cole',
   cadillac: 'Mike Delgado',
+  // Classics (2011–2025)
+  renault: 'Antoine Lefevre',
+  sauber: 'Urs Keller',
+  'force-india': 'Ravi Mehta',
+  'toro-rosso': 'Marco Ferri',
+  'team-lotus': 'Ian Fairbairn',
+  'lotus-f1': 'Gareth Lowe',
+  virgin: 'Neil Pryce',
+  hrt: 'Javier Soto',
+  caterham: 'Chris Tan',
+  marussia: 'Dmitri Volkov',
+  manor: 'Rob Hollis',
+  'alfa-romeo': 'Paolo Ricci',
+  'racing-point': 'Stuart Byrne',
+  alphatauri: 'Simone Galli',
 };
 
 export interface RadioLine {
@@ -26,7 +41,6 @@ export interface RadioLine {
   text: string;
 }
 
-const NAME: Record<Compound, string> = { S: 'softs', M: 'mediums', H: 'hards' };
 
 function pick<T>(options: readonly T[], seed: number): T {
   return options[Math.abs(seed) % options.length]!;
@@ -42,6 +56,12 @@ export interface RadioContext {
   state: RaceState;
   /** Full names by code, for "Leclerc has boxed". */
   names: Map<string, string>;
+  /** Compound names for this race's era, e.g. { S: 'Ultrasoft' }. */
+  tyreNames: Record<Compound, string>;
+}
+
+function plural(ctx: RadioContext, c: Compound): string {
+  return ctx.tyreNames[c].toLowerCase() + 's';
 }
 
 function surname(ctx: RadioContext, code: string): string {
@@ -66,7 +86,7 @@ export function radioFor(e: RaceEvent, t: number, ctx: RadioContext): RadioLine[
           pick(
             [
               `Okay ${ctx.meName}, starting P${me.position}. Clean start, look after the tyres into turn one.`,
-              `Radio check, ${ctx.meName}. P${me.position} on the grid, ${NAME[me.compound]} on. Let's go.`,
+              `Radio check, ${ctx.meName}. P${me.position} on the grid, ${plural(ctx, me.compound)} on. Let's go.`,
             ],
             s,
           ),
@@ -97,13 +117,13 @@ export function radioFor(e: RaceEvent, t: number, ctx: RadioContext): RadioLine[
           eng(
             e.slow
               ? pick(['Sorry, problem on the front left. We lost a couple of seconds.', 'Slow one, sorry. Head down.'], s)
-              : `Good stop, ${e.stationary.toFixed(1)}. ${NAME[e.to][0]!.toUpperCase() + NAME[e.to].slice(1)} on. P${me.position}.`,
+              : `Good stop, ${e.stationary.toFixed(1)}. ${ctx.tyreNames[e.to]}s on. P${me.position}.`,
           ),
         ];
         return out;
       }
       if (near(e.driver)) {
-        return [eng(`${surname(ctx, e.driver)} has boxed for ${NAME[e.to]}.`)];
+        return [eng(`${surname(ctx, e.driver)} has boxed for ${plural(ctx, e.to)}.`)];
       }
       return [];
     }
@@ -125,6 +145,11 @@ export function radioFor(e: RaceEvent, t: number, ctx: RadioContext): RadioLine[
         return [drv(pick(['Tyres are gone, mate. The rears are finished.', "I've got no rears left!", 'These tyres are dead.'], s))];
       }
       return [];
+    case 'retirement': {
+      const out: RadioLine[] = [{ t, lap: e.lap, who: 'rc', text: `CAR ${e.driver} STOPPED · RETIRED` }];
+      if (near(e.driver)) out.push(eng(`${surname(ctx, e.driver)} is out of the race. One less to worry about.`));
+      return out;
+    }
     case 'cover':
       if (e.rival === me.driver) return [eng(`${surname(ctx, e.driver)} is reacting, he'll box this lap to cover us.`)];
       return [];

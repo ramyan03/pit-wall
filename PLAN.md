@@ -14,15 +14,29 @@ Each later milestone still needs its acceptance pass against fitted data. D1/D2 
   real names + Commons photos/logos with credits (private only, Vercel deploys off);
   fictional engineers + team radio; results vs the real race.
   Owner playtest: "very cool and working well".
-- **2026-10-17 · (uncommitted):** the agreed "Next up" design. Speed slider ¼–30× (log) + pause;
+- **2026-10-17 · 79772e8:** the agreed "Next up" design. Speed slider ¼–30× (log) + pause;
   out-lap warm-up by compound; AI covers undercuts (cover stream); Attack/Defend/Harvest
   battery; push-for-N-laps targets; team orders (hold up / let by); rival-reading chatter
   (`web/src/app/chatter.ts`, timing-screen info only); radio decisions with worker-scored
   answers (`compare`). 10 new engine tests (`engine/test/agency.test.ts`). Needs an owner playtest.
+- **2026-10-17 · (uncommitted):** the 15 classics. Schema v3 (`availableCompounds`,
+  `compoundNames`, `realEvents`; season minimum 2011). Engine: real-events replay (SC/VSC/red
+  on their real laps, AI retirements; never the player), nominated compounds (createRace,
+  red flags, practice). Builder `--classics` with era teams/colours, era tyres and generalised
+  templates. Web: Classics section in the picker, "Real race" toggle, era tyre names,
+  retired cars (OUT / DNF), photos keyed by full name. 5 new engine tests. Sanity replay:
+  with real events, the real winner wins most AI-only sims in 2012–15/2020/2021. Others are
+  open, which is fine for a redo.
 
 ## Next up
 
-**Historical races (owner, 2026-10-17):** one standout race per season, 2011–2025 (the Pirelli,
+- Owner playtest of the agreed design + classics.
+- Classics tyre/temperature numbers are estimates. Revisit with FastF1 (D1/D2) if the timing
+  host ever reopens; FastF1 has 2018+ only.
+- Rebuild the 2026 rounds with the new builder (generalised templates; schema v3 already
+  bumped in place).
+
+**Historical races (owner, 2026-10-17), built:** one standout race per season, 2011–2025 (the Pirelli,
 no-refuelling era, which the model fits). Picked for strategy, not drama, and dry only (the
 engine has no wet tyres). Jolpica has full lap + pit-stop data for all 15 (checked 2026-10-17).
 
@@ -44,10 +58,9 @@ engine has no wet tyres). Jolpica has full lap + pit-stop data for all 15 (check
 | 2024 | Italy (R16) | Leclerc's 1-stop beats McLaren's 2-stop |
 | 2025 | Hungary (R14) | Norris's 1-stop beats Piastri's 2-stop by 0.7 s |
 
-To build: the builder takes `--season` but assumes 2026 (team ids/colours, engineers, 22-car
-grid, PROFILES by circuit). Needs per-season teams + colours, a `--races` list, era tyre
-profiles (2011–13 high deg; 2011–18 compound names differ), Commons media for past drivers,
-and a "Classics" row in the circuit picker. AI strategy templates come from the real pit laps.
+Real SC/VSC laps (from race reports): 2014 SC L41 (6), 2015 SC L4 (3), 2016 SC L1 (3), 2017
+VSC L34 (2), 2018 SC L31 (4), 2021 SC L8 (3), 2023 SC L20 (3) + VSC L44 (2). Sources disagree
+by a lap for 2015, 2017 and 2018.
 
 ## Done 2026-10-17 (owner feedback, 2026-10-16)
 

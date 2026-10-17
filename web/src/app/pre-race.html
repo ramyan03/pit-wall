@@ -4,7 +4,7 @@
       <button class="ghost" (click)="back.emit()">← Circuits</button>
       <div>
         <div class="eyebrow">Round {{ t.meta.round }} · {{ t.meta.season }}</div>
-        <h1>{{ t.meta.eventName }}</h1>
+        <h1>{{ t.meta.season !== 2026 ? t.meta.season + ' ' : '' }}{{ t.meta.eventName }}</h1>
       </div>
     </header>
 
@@ -31,7 +31,7 @@
               <span class="eyebrow">Tyre allocation</span>
               <span class="alloc">
                 @for (c of compounds; track c) {
-                  <span class="tyre sm" [attr.data-c]="c">{{ c }}</span> {{ t.compoundAllocation[c] }}
+                  <span class="tyre sm" [attr.data-c]="c">{{ c }}</span> {{ t.compoundNames ? name[c] : t.compoundAllocation[c] }}
                 }
               </span>
             </div>
@@ -68,8 +68,8 @@
                   @if (panel.est; as e) {
                     <div class="est">
                       <span>deg <strong>{{ e.deg >= 0 ? '+' : '' }}{{ e.deg.toFixed(3) }}</strong> ±{{ e.degSe.toFixed(3) }} s/lap</span>
-                      @if (panel.c !== 'M') {
-                        <span>vs M <strong>{{ e.offset >= 0 ? '+' : '' }}{{ e.offset.toFixed(2) }}</strong> s</span>
+                      @if (panel.c !== e.vs) {
+                        <span>vs {{ e.vs }} <strong>{{ e.offset >= 0 ? '+' : '' }}{{ e.offset.toFixed(2) }}</strong> s</span>
                       }
                     </div>
                   }
@@ -132,7 +132,7 @@
           <div class="driver-grid photos">
             @for (d of grid(); track d.code) {
               <button class="driver" [class.selected]="driver() === d.code" [style.--team]="teams().get(d.teamId)?.colour" (click)="driver.set(d.code)">
-                @if (data.photo(d.code); as src) {
+                @if (data.photo(d.fullName); as src) {
                   <img class="face" [src]="src" [alt]="d.fullName" loading="lazy" />
                 } @else {
                   <span class="face mono">{{ d.code }}</span>
@@ -174,6 +174,15 @@
             }
           </div>
 
+          @if (hasRealEvents()) {
+            <h2>Race events</h2>
+            <label class="radio-row" [class.selected]="realEvents()">
+              <input type="checkbox" [checked]="realEvents()" (change)="realEvents.set(!realEvents())" />
+              <span>Real race</span>
+              <span class="muted">Safety cars and retirements happen when they really did (any difficulty). Off = random.</span>
+            </label>
+          }
+
           <h2>Starting tyre</h2>
           <div class="tyre-pick">
             @for (c of compounds; track c) {
@@ -182,7 +191,11 @@
               </button>
             }
           </div>
-          <p class="muted small">Two different compounds in the race, or you're disqualified.</p>
+          <p class="muted small">Two different compounds in the race, or you're disqualified.
+            @if (compounds.length === 2) {
+              Only two compounds were nominated for this race.
+            }
+          </p>
 
           <h2>Seed</h2>
           <div class="seed-row">

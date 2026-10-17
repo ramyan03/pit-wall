@@ -1,0 +1,233 @@
+{
+  "results": [
+    {
+      "code": "VET",
+      "position": 1,
+      "grid": 2,
+      "status": "Finished",
+      "time": "1:41:05.793"
+    },
+    {
+      "code": "HAM",
+      "position": 2,
+      "grid": 1,
+      "status": "Finished",
+      "time": "+8.569"
+    },
+    {
+      "code": "ROS",
+      "position": 3,
+      "grid": 3,
+      "status": "Finished",
+      "time": "+12.310"
+    },
+    {
+      "code": "RAI",
+      "position": 4,
+      "grid": 11,
+      "status": "Finished",
+      "time": "+53.822"
+    },
+    {
+      "code": "BOT",
+      "position": 5,
+      "grid": 8,
+      "status": "Finished",
+      "time": "+1:10.409"
+    },
+    {
+      "code": "MAS",
+      "position": 6,
+      "grid": 7,
+      "status": "Finished",
+      "time": "+1:13.586"
+    },
+    {
+      "code": "VER",
+      "position": 7,
+      "grid": 6,
+      "status": "Finished",
+      "time": "+1:37.762"
+    },
+    {
+      "code": "SAI",
+      "position": 8,
+      "grid": 15,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "KVY",
+      "position": 9,
+      "grid": 5,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "RIC",
+      "position": 10,
+      "grid": 4,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "GRO",
+      "position": 11,
+      "grid": 10,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "NAS",
+      "position": 12,
+      "grid": 16,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "PER",
+      "position": 13,
+      "grid": 14,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "HUL",
+      "position": 14,
+      "grid": 13,
+      "status": "+1 Lap",
+      "time": null
+    },
+    {
+      "code": "MER",
+      "position": 15,
+      "grid": 19,
+      "status": "+3 Laps",
+      "time": null
+    },
+    {
+      "code": "MAL",
+      "position": 16,
+      "grid": 12,
+      "status": "Retired",
+      "time": null
+    },
+    {
+      "code": "BUT",
+      "position": 17,
+      "grid": 17,
+      "status": "Turbo",
+      "time": null
+    },
+    {
+      "code": "ALO",
+      "position": 18,
+      "grid": 18,
+      "status": "ERS",
+      "time": null
+    },
+    {
+      "code": "ERI",
+      "position": 19,
+      "grid": 9,
+      "status": "Spun off",
+      "time": null
+    },
+    {
+      "code": "STE",
+      "position": 20,
+      "grid": 0,
+      "status": "Fuel system",
+      "time": null
+    }
+  ],
+  "pitLaps": {
+    "MAL": [
+      1,
+      18,
+      33
+    ],
+    "NAS": [
+      2,
+      20,
+      30,
+      43
+    ],
+    "RAI": [
+      2,
+      14,
+      34
+    ],
+    "HAM": [
+      4,
+      24,
+      38
+    ],
+    "ROS": [
+      4,
+      26,
+      41
+    ],
+    "RIC": [
+      4,
+      18,
+      34
+    ],
+    "MAS": [
+      4,
+      24,
+      38
+    ],
+    "KVY": [
+      4,
+      21,
+      39
+    ],
+    "VER": [
+      4,
+      20,
+      40
+    ],
+    "BOT": [
+      4,
+      25,
+      40
+    ],
+    "ALO": [
+      4
+    ],
+    "BUT": [
+      4,
+      21,
+      35
+    ],
+    "MER": [
+      5,
+      22,
+      42
+    ],
+    "SAI": [
+      14,
+      32
+    ],
+    "HUL": [
+      15,
+      31,
+      44
+    ],
+    "GRO": [
+      15,
+      26,
+      34
+    ],
+    "VET": [
+      17,
+      37
+    ],
+    "PER": [
+      17,
+      35
+    ]
+  },
+  "source": "Jolpica (Ergast API)"
+}

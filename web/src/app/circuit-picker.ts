@@ -1,30 +1,49 @@
-import { Component, inject, OnInit, output, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, computed, inject, OnInit, output, signal } from '@angular/core';
 import { CircuitMap } from './circuit-map';
 import { DataService, type Circuit, type TrackIndexEntry } from './data';
 
 @Component({
   selector: 'app-circuit-picker',
-  imports: [CircuitMap],
+  imports: [CircuitMap, NgTemplateOutlet],
   template: `
     <main class="picker">
       <header class="picker-head">
         <div>
           <h1>Pit Wall</h1>
-          <p class="tagline">2026 season · pick a Grand Prix and call the strategy.</p>
+          <p class="tagline">Pick a Grand Prix and call the strategy: the 2026 season, or redo a classic.</p>
         </div>
         <button class="ghost" (click)="credits.emit()">Credits & sources</button>
       </header>
       @if (error()) {
         <p class="bad">{{ error() }}</p>
       }
+      <h2 class="picker-section">2026 season</h2>
       <div class="circuit-grid">
-        @for (t of tracks(); track t.trackId) {
-          <button class="circuit-card" (click)="pick.emit(t.trackId)">
+        @for (t of season(); track t.trackId) {
+          <ng-container *ngTemplateOutlet="card; context: { $implicit: t }" />
+        }
+      </div>
+      @if (classics().length) {
+        <h2 class="picker-section">Classics <span class="muted small">· one strategy race per season, 2011–2025 · real safety cars and retirements</span></h2>
+        <div class="circuit-grid">
+          @for (t of classics(); track t.trackId) {
+            <ng-container *ngTemplateOutlet="card; context: { $implicit: t }" />
+          }
+        </div>
+      }
+
+      <ng-template #card let-t>
+          <button class="circuit-card" [class.classic]="t.classic" (click)="pick.emit(t.trackId)">
             <div class="cc-map">
               <app-circuit-map [circuit]="maps()[t.trackId] ?? null" [mini]="true" />
             </div>
             <div class="cc-body">
-              <div class="eyebrow">Round {{ t.round }} · {{ date(t.date) }}</div>
+              @if (t.classic) {
+                <div class="eyebrow">{{ t.season }} · Round {{ t.round }}</div>
+              } @else {
+                <div class="eyebrow">Round {{ t.round }} · {{ date(t.date) }}</div>
+              }
               <div class="cc-name">{{ t.eventName }}</div>
               <div class="muted small">{{ t.circuitName }}, {{ t.country }}</div>
               <div class="cc-stats">
@@ -36,15 +55,19 @@ import { DataService, type Circuit, type TrackIndexEntry } from './data';
               </div>
               <div class="cc-tyres">
                 @for (c of compounds; track c) {
-                  <span class="tyre xs" [attr.data-c]="c">{{ c }}</span><span class="cnum">{{ t.allocation[c] }}</span>
+                  @if (t.allocation[c]; as a) {
+                    <span class="tyre xs" [attr.data-c]="c">{{ c }}</span><span class="cnum">{{ a }}</span>
+                  }
                 }
                 <span class="wear" [attr.data-level]="wearLevel(t.wear)">{{ wearLevel(t.wear) }} wear</span>
               </div>
+              @if (t.blurb) {
+                <div class="small cc-blurb">{{ t.blurb }}</div>
+              }
               <div class="muted small">Won by {{ t.winner }}</div>
             </div>
           </button>
-        }
-      </div>
+      </ng-template>
     </main>
   `,
 })
@@ -53,6 +76,8 @@ export class CircuitPicker implements OnInit {
   readonly pick = output<string>();
   readonly credits = output<void>();
   protected readonly tracks = signal<TrackIndexEntry[]>([]);
+  protected readonly season = computed(() => this.tracks().filter((t) => !t.classic));
+  protected readonly classics = computed(() => this.tracks().filter((t) => t.classic));
   protected readonly maps = signal<Record<string, Circuit>>({});
   protected readonly error = signal<string | null>(null);
   protected readonly compounds = ['S', 'M', 'H'] as const;

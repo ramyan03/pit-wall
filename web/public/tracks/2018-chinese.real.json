@@ -1,0 +1,217 @@
+{
+  "results": [
+    {
+      "code": "RIC",
+      "position": 1,
+      "grid": 6,
+      "status": "Finished",
+      "time": "1:35:36.380"
+    },
+    {
+      "code": "BOT",
+      "position": 2,
+      "grid": 3,
+      "status": "Finished",
+      "time": "+8.894"
+    },
+    {
+      "code": "RAI",
+      "position": 3,
+      "grid": 2,
+      "status": "Finished",
+      "time": "+9.637"
+    },
+    {
+      "code": "HAM",
+      "position": 4,
+      "grid": 4,
+      "status": "Finished",
+      "time": "+16.985"
+    },
+    {
+      "code": "VER",
+      "position": 5,
+      "grid": 5,
+      "status": "Finished",
+      "time": "+20.436"
+    },
+    {
+      "code": "HUL",
+      "position": 6,
+      "grid": 7,
+      "status": "Finished",
+      "time": "+21.052"
+    },
+    {
+      "code": "ALO",
+      "position": 7,
+      "grid": 13,
+      "status": "Finished",
+      "time": "+30.639"
+    },
+    {
+      "code": "VET",
+      "position": 8,
+      "grid": 1,
+      "status": "Finished",
+      "time": "+35.286"
+    },
+    {
+      "code": "SAI",
+      "position": 9,
+      "grid": 9,
+      "status": "Finished",
+      "time": "+35.763"
+    },
+    {
+      "code": "MAG",
+      "position": 10,
+      "grid": 11,
+      "status": "Finished",
+      "time": "+39.594"
+    },
+    {
+      "code": "OCO",
+      "position": 11,
+      "grid": 12,
+      "status": "Finished",
+      "time": "+44.050"
+    },
+    {
+      "code": "PER",
+      "position": 12,
+      "grid": 8,
+      "status": "Finished",
+      "time": "+44.725"
+    },
+    {
+      "code": "VAN",
+      "position": 13,
+      "grid": 14,
+      "status": "Finished",
+      "time": "+49.373"
+    },
+    {
+      "code": "STR",
+      "position": 14,
+      "grid": 18,
+      "status": "Finished",
+      "time": "+55.490"
+    },
+    {
+      "code": "SIR",
+      "position": 15,
+      "grid": 16,
+      "status": "Finished",
+      "time": "+58.241"
+    },
+    {
+      "code": "ERI",
+      "position": 16,
+      "grid": 20,
+      "status": "Finished",
+      "time": "+1:02.604"
+    },
+    {
+      "code": "GRO",
+      "position": 17,
+      "grid": 10,
+      "status": "Finished",
+      "time": "+1:05.296"
+    },
+    {
+      "code": "GAS",
+      "position": 18,
+      "grid": 17,
+      "status": "Finished",
+      "time": "+1:06.330"
+    },
+    {
+      "code": "LEC",
+      "position": 19,
+      "grid": 19,
+      "status": "Finished",
+      "time": "+1:22.575"
+    },
+    {
+      "code": "HAR",
+      "position": 20,
+      "grid": 15,
+      "status": "Collision damage",
+      "time": null
+    }
+  ],
+  "pitLaps": {
+    "HAR": [
+      10,
+      30
+    ],
+    "OCO": [
+      11,
+      31
+    ],
+    "SAI": [
+      12,
+      31
+    ],
+    "PER": [
+      12,
+      32
+    ],
+    "HUL": [
+      13,
+      31
+    ],
+    "GRO": [
+      16,
+      46
+    ],
+    "VER": [
+      17,
+      31
+    ],
+    "RIC": [
+      17,
+      31
+    ],
+    "HAM": [
+      18
+    ],
+    "BOT": [
+      19
+    ],
+    "VET": [
+      20
+    ],
+    "GAS": [
+      20,
+      31
+    ],
+    "LEC": [
+      21
+    ],
+    "VAN": [
+      22
+    ],
+    "STR": [
+      23
+    ],
+    "MAG": [
+      24
+    ],
+    "RAI": [
+      27
+    ],
+    "SIR": [
+      28,
+      33
+    ],
+    "ALO": [
+      29
+    ],
+    "ERI": [
+      29
+    ]
+  },
+  "source": "Jolpica (Ergast API)"
+}

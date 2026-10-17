@@ -1,0 +1,418 @@
+{
+  "schemaVersion": 3,
+  "meta": {
+    "season": 2017,
+    "round": 5,
+    "eventName": "Spanish Grand Prix",
+    "trackId": "2017-spanish",
+    "laps": 66,
+    "synthetic": false,
+    "source": {
+      "fastf1Version": null,
+      "generatedAt": "2026-10-17T17:36:17+00:00",
+      "incidentSeasons": []
+    }
+  },
+  "conditions": {
+    "airTempC": 26,
+    "trackTempC": 43,
+    "refTempC": 43
+  },
+  "compoundAllocation": {
+    "S": "C3",
+    "M": "C2",
+    "H": "C1"
+  },
+  "tyres": {
+    "S": {
+      "compoundOffset": -0.6,
+      "degRate": 0.09,
+      "cliffLap": 18,
+      "cliffK": 0.03,
+      "tempSens": 0.012,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    },
+    "M": {
+      "compoundOffset": 0.0,
+      "degRate": 0.055,
+      "cliffLap": 30,
+      "cliffK": 0.02,
+      "tempSens": 0.01,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    },
+    "H": {
+      "compoundOffset": 0.4,
+      "degRate": 0.035,
+      "cliffLap": 44,
+      "cliffK": 0.012,
+      "tempSens": 0.008,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    }
+  },
+  "priorTyres": null,
+  "fuel": {
+    "fuelSecPerLap": 0.045
+  },
+  "trackEvo": 0.01,
+  "noiseSigma": 0.3,
+  "sectorFractions": [
+    0.29,
+    0.4,
+    0.31
+  ],
+  "pit": {
+    "pitLoss": 16.23,
+    "stationaryMean": 2.4,
+    "slowStopProb": 0.05,
+    "slowStopExtra": [
+      1.0,
+      3.0
+    ]
+  },
+  "traffic": {
+    "followGap": 1.0,
+    "overtakeDelta": 0.9,
+    "overtakeProb": 0.1
+  },
+  "incidents": {
+    "scHazardPerLap": 0.01,
+    "vscHazardPerLap": 0.01,
+    "redHazardPerLap": 0.002,
+    "scDurationLaps": [
+      3,
+      6
+    ],
+    "vscDurationLaps": [
+      1,
+      3
+    ],
+    "scCompressedGap": 0.8,
+    "lapTimeMult": {
+      "sc": 1.4,
+      "vsc": 1.35
+    },
+    "pitLossMult": {
+      "sc": 0.5,
+      "vsc": 0.6
+    }
+  },
+  "teams": [
+    {
+      "id": "mercedes",
+      "name": "Mercedes",
+      "colour": "#00D2BE"
+    },
+    {
+      "id": "ferrari",
+      "name": "Ferrari",
+      "colour": "#E8002D"
+    },
+    {
+      "id": "red-bull",
+      "name": "Red Bull Racing",
+      "colour": "#1E41FF"
+    },
+    {
+      "id": "force-india",
+      "name": "Force India",
+      "colour": "#F596C8"
+    },
+    {
+      "id": "renault",
+      "name": "Renault",
+      "colour": "#FFF500"
+    },
+    {
+      "id": "toro-rosso",
+      "name": "Toro Rosso",
+      "colour": "#469BFF"
+    },
+    {
+      "id": "sauber",
+      "name": "Sauber",
+      "colour": "#9B9B9B"
+    },
+    {
+      "id": "haas",
+      "name": "Haas",
+      "colour": "#B6BABD"
+    },
+    {
+      "id": "mclaren",
+      "name": "McLaren",
+      "colour": "#FF8000"
+    },
+    {
+      "id": "williams",
+      "name": "Williams",
+      "colour": "#005AFF"
+    }
+  ],
+  "drivers": [
+    {
+      "code": "HAM",
+      "number": 44,
+      "teamId": "mercedes",
+      "fullName": "Lewis Hamilton",
+      "basePace": 83.426,
+      "gridPosition": 1
+    },
+    {
+      "code": "VET",
+      "number": 5,
+      "teamId": "ferrari",
+      "fullName": "Sebastian Vettel",
+      "basePace": 83.242,
+      "gridPosition": 2
+    },
+    {
+      "code": "RIC",
+      "number": 3,
+      "teamId": "red-bull",
+      "fullName": "Daniel Ricciardo",
+      "basePace": 84.498,
+      "gridPosition": 6
+    },
+    {
+      "code": "PER",
+      "number": 11,
+      "teamId": "force-india",
+      "fullName": "Sergio Pérez",
+      "basePace": 85.148,
+      "gridPosition": 8
+    },
+    {
+      "code": "OCO",
+      "number": 31,
+      "teamId": "force-india",
+      "fullName": "Esteban Ocon",
+      "basePace": 85.335,
+      "gridPosition": 10
+    },
+    {
+      "code": "HUL",
+      "number": 27,
+      "teamId": "renault",
+      "fullName": "Nico Hülkenberg",
+      "basePace": 85.652,
+      "gridPosition": 13
+    },
+    {
+      "code": "SAI",
+      "number": 55,
+      "teamId": "toro-rosso",
+      "fullName": "Carlos Sainz",
+      "basePace": 85.584,
+      "gridPosition": 12
+    },
+    {
+      "code": "WEH",
+      "number": 94,
+      "teamId": "sauber",
+      "fullName": "Pascal Wehrlein",
+      "basePace": 85.746,
+      "gridPosition": 15
+    },
+    {
+      "code": "KVY",
+      "number": 26,
+      "teamId": "toro-rosso",
+      "fullName": "Daniil Kvyat",
+      "basePace": 85.886,
+      "gridPosition": 19
+    },
+    {
+      "code": "GRO",
+      "number": 8,
+      "teamId": "haas",
+      "fullName": "Romain Grosjean",
+      "basePace": 85.988,
+      "gridPosition": 14
+    },
+    {
+      "code": "ERI",
+      "number": 9,
+      "teamId": "sauber",
+      "fullName": "Marcus Ericsson",
+      "basePace": 86.011,
+      "gridPosition": 16
+    },
+    {
+      "code": "ALO",
+      "number": 14,
+      "teamId": "mclaren",
+      "fullName": "Fernando Alonso",
+      "basePace": 85.933,
+      "gridPosition": 7
+    },
+    {
+      "code": "MAS",
+      "number": 19,
+      "teamId": "williams",
+      "fullName": "Felipe Massa",
+      "basePace": 85.539,
+      "gridPosition": 9
+    },
+    {
+      "code": "MAG",
+      "number": 20,
+      "teamId": "haas",
+      "fullName": "Kevin Magnussen",
+      "basePace": 85.852,
+      "gridPosition": 11
+    },
+    {
+      "code": "PAL",
+      "number": 30,
+      "teamId": "renault",
+      "fullName": "Jolyon Palmer",
+      "basePace": 85.911,
+      "gridPosition": 17
+    },
+    {
+      "code": "STR",
+      "number": 18,
+      "teamId": "williams",
+      "fullName": "Lance Stroll",
+      "basePace": 86.413,
+      "gridPosition": 18
+    },
+    {
+      "code": "BOT",
+      "number": 77,
+      "teamId": "mercedes",
+      "fullName": "Valtteri Bottas",
+      "basePace": 83.875,
+      "gridPosition": 3
+    },
+    {
+      "code": "VAN",
+      "number": 2,
+      "teamId": "mclaren",
+      "fullName": "Stoffel Vandoorne",
+      "basePace": 86.54,
+      "gridPosition": 20
+    },
+    {
+      "code": "VER",
+      "number": 3,
+      "teamId": "red-bull",
+      "fullName": "Max Verstappen",
+      "basePace": 86.84,
+      "gridPosition": 5
+    },
+    {
+      "code": "RAI",
+      "number": 7,
+      "teamId": "ferrari",
+      "fullName": "Kimi Räikkönen",
+      "basePace": 86.84,
+      "gridPosition": 4
+    }
+  ],
+  "strategies": [
+    {
+      "id": "1stop-MH",
+      "stints": [
+        "M",
+        "H"
+      ],
+      "pitLaps": [
+        30
+      ],
+      "pitLapJitter": 4,
+      "weight": 4
+    },
+    {
+      "id": "1stop-HM",
+      "stints": [
+        "H",
+        "M"
+      ],
+      "pitLaps": [
+        36
+      ],
+      "pitLapJitter": 4,
+      "weight": 1.2
+    },
+    {
+      "id": "2stop-SMH",
+      "stints": [
+        "S",
+        "M",
+        "H"
+      ],
+      "pitLaps": [
+        17,
+        34
+      ],
+      "pitLapJitter": 3,
+      "weight": 12
+    },
+    {
+      "id": "3stop-MMHS",
+      "stints": [
+        "M",
+        "M",
+        "H",
+        "S"
+      ],
+      "pitLaps": [
+        12,
+        32,
+        57
+      ],
+      "pitLapJitter": 3,
+      "weight": 2
+    }
+  ],
+  "availableCompounds": [
+    "S",
+    "M",
+    "H"
+  ],
+  "compoundNames": {
+    "S": "Soft",
+    "M": "Medium",
+    "H": "Hard"
+  },
+  "realEvents": {
+    "incidents": [
+      {
+        "lap": 34,
+        "type": "vsc",
+        "laps": 2
+      }
+    ],
+    "retirements": [
+      {
+        "driver": "BOT",
+        "lap": 39
+      },
+      {
+        "driver": "VAN",
+        "lap": 33
+      },
+      {
+        "driver": "VER",
+        "lap": 2
+      },
+      {
+        "driver": "RAI",
+        "lap": 1
+      }
+    ]
+  }
+}
