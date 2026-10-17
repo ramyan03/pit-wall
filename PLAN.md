@@ -1,8 +1,43 @@
 # Pit Wall: Plan
 
-Status: **M0 done. M1 accepted. Rough v1 demo of M2–M7 in place** (synthetic data, placeholder
-tunables marked `PLACEHOLDER` in `engine/src/race.ts`). Each later milestone still needs its
-acceptance pass against real data. Not started: D1, D2, M8, M9.
+Status: **M0 done. M1 accepted. Playable private v1 of M2–M7** on 17 real 2026 circuits
+(Jolpica data + manual tyre estimates; tunables marked `PLACEHOLDER` in `engine/src/race.ts`).
+Each later milestone still needs its acceptance pass against fitted data. D1/D2 blocked
+(FastF1 live timing returns 401). Not started: M8, M9.
+
+## Progress log
+
+- **2026-10-16 · a5d955b:** engine rough v1 (M1 accepted, M2–M5 roughed in), first demo UI.
+- **2026-10-16 · 5dc1d6d:** schema v2 (sectors, fullName); per-lap/per-car RNG streams (CRN);
+  one pass per lap; live sector timing at 1/10 real time with moving map; 17 circuits from
+  Jolpica + bacinger outlines; pre-race briefing, simulated FP2 long runs, strategy sims;
+  real names + Commons photos/logos with credits (private only, Vercel deploys off);
+  fictional engineers + team radio; results vs the real race.
+  Owner playtest: "very cool and working well".
+
+## Next up (owner feedback, 2026-10-16)
+
+1. **Speed control as a slider**, not just 1×/4×/16× presets.
+2. **More agency than Push/Conserve.** The player should feel they can act every few laps.
+3. **Pit-wall chatter that reads the race**, e.g. "Russell looks like he's going long on a
+   1-stop, push now", "Antonelli just pitted for the undercut, stay out / cover".
+4. **Undercut / overcut as a real mechanic:** out-lap tyre warm-up, fresh-tyre delta,
+   pit-exit traffic, rivals reacting (cover the undercut).
+
+**Agreed design (owner, 2026-10-16), build next session:**
+- Time: a continuous **speed slider**, ¼×–30× on a log scale, plus pause (no replay scrubber).
+- Undercut/overcut physics: out-lap warm-up penalty by compound (Hard slowest), pit-exit
+  traffic (rejoin behind slower cars), AI covers an undercut when it's in range.
+- Engineer chatter infers rivals' plans from tyre age + pace (not from hidden AI plans).
+- New player agency, all four:
+  - **Radio decisions:** engineer asks at key moments (rival boxed, SC, car closing) with
+    2–3 answer buttons, plus a quick sim estimate per answer where hints are allowed.
+  - **Attack / Defend / Harvest:** 2026-style battery. Spend charge to raise or resist pass
+    chance, harvest to recharge, with a gauge.
+  - **Push targets:** "push for N laps", then back to neutral automatically.
+  - **Team orders:** teammate holds up a rival, or lets you by.
+- Engine changes stay deterministic: new draws go on the per-car streams, commands keyed
+  by lap.
 
 ## MVP track: Singapore 2026 (recommended), Monaco 2026 as fallback
 
