@@ -182,6 +182,26 @@
 
       <!-- Right: controls + radio -->
       <section class="stack">
+        @if (store.decision(); as d) {
+          <div class="card decision" role="alertdialog" aria-label="Radio decision">
+            <div class="card-head">
+              <span class="eyebrow">{{ engineer().split(' ')[0] }} · L{{ d.lap }}</span>
+              <span class="muted small">{{ store.decisionPending() ? 'Simulating…' : '' }}</span>
+            </div>
+            <p class="decision-q">{{ d.prompt }}</p>
+            <div class="decision-opts">
+              @for (o of d.options; track $index; let i = $index) {
+                <button (click)="store.answer(i)">
+                  <span>{{ o.label }}</span>
+                  @if (o.estimate !== null) {
+                    <span class="est">exp. P{{ o.estimate.toFixed(1) }}</span>
+                  }
+                </button>
+              }
+            </div>
+            <div class="decision-clock" [style.--left]="decisionLeft()"></div>
+          </div>
+        }
         @if (me(); as m) {
           <div class="card controls">
             <h2>Controls</h2>
@@ -214,13 +234,44 @@
                 <button class="cap" [class.on]="store.paceMode() === p" (click)="store.setPace(p)">{{ p }}</button>
               }
             </div>
+            <div class="push-row">
+              <span class="eyebrow">Push for</span>
+              @for (n of pushLaps; track n) {
+                <button class="ghost small" (click)="store.pushFor(n)">{{ n }} laps</button>
+              }
+              @if (store.pushUntil(); as until) {
+                <span class="muted small">to L{{ until }}</span>
+              }
+            </div>
+
+            <h2>Battery</h2>
+            <div class="battery" [class.low]="store.battery() < 0.25" title="Battery charge">
+              <div class="battery-fill" [style.width.%]="store.battery() * 100"></div>
+              <span>{{ (store.battery() * 100).toFixed(0) }}%</span>
+            </div>
+            <div class="seg">
+              @for (e of ersModes; track e.mode) {
+                <button [class.on]="store.ersMode() === e.mode" [attr.data-ers]="e.mode" [title]="e.title" (click)="store.setErs(e.mode)">{{ e.label }}</button>
+              }
+            </div>
+
+            @if (store.teammate(); as mate) {
+              <h2>Team orders <span class="muted small">· {{ mate.code }} P{{ mate.position }}</span></h2>
+              <div class="seg">
+                @for (o of teamOrders; track o.order) {
+                  <button [class.on]="store.teamOrder() === o.order" (click)="store.setTeamOrder(o.order)">{{ o.label }}</button>
+                }
+              </div>
+            }
+            <div class="muted small">Pace, battery and orders take effect from your next lap.</div>
 
             <h2>Simulation speed</h2>
-            <div class="seg speed">
-              <button [class.on]="store.speed() === 0" (click)="store.setSpeed(0)" title="Pause">❚❚</button>
-              @for (sp of speeds; track sp) {
-                <button [class.on]="store.speed() === sp" (click)="store.setSpeed(sp)">{{ speedLabel(sp) }}</button>
-              }
+            <div class="speed-row">
+              <button class="ghost small" (click)="store.togglePause()" [title]="store.speed() > 0 ? 'Pause' : 'Play'">{{ store.speed() > 0 ? '❚❚' : '▶' }}</button>
+              <input type="range" min="0" max="1" step="0.001" aria-label="Simulation speed"
+                [value]="sliderValue(store.speed())" (input)="onSlider($any($event.target).value)" />
+              <span class="speed-val">{{ speedLabel(store.speed()) }}</span>
+              <button class="ghost small" (click)="store.setSpeed(1)" title="Back to 1×">1×</button>
             </div>
             <div class="muted small">1× = 1/10 real time (~{{ ((t.drivers[0]?.basePace ?? 90) / 10).toFixed(0) }} s per lap).
               @if (store.autoSlow(); as a) {

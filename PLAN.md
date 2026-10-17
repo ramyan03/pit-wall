@@ -14,8 +14,42 @@ Each later milestone still needs its acceptance pass against fitted data. D1/D2 
   real names + Commons photos/logos with credits (private only, Vercel deploys off);
   fictional engineers + team radio; results vs the real race.
   Owner playtest: "very cool and working well".
+- **2026-10-17 · (uncommitted):** the agreed "Next up" design. Speed slider ¼–30× (log) + pause;
+  out-lap warm-up by compound; AI covers undercuts (cover stream); Attack/Defend/Harvest
+  battery; push-for-N-laps targets; team orders (hold up / let by); rival-reading chatter
+  (`web/src/app/chatter.ts`, timing-screen info only); radio decisions with worker-scored
+  answers (`compare`). 10 new engine tests (`engine/test/agency.test.ts`). Needs an owner playtest.
 
-## Next up (owner feedback, 2026-10-16)
+## Next up
+
+**Historical races (owner, 2026-10-17):** one standout race per season, 2011–2025 (the Pirelli,
+no-refuelling era, which the model fits). Picked for strategy, not drama, and dry only (the
+engine has no wet tyres). Jolpica has full lap + pit-stop data for all 15 (checked 2026-10-17).
+
+| Season | Race | Why it's a strategy race |
+|---|---|---|
+| 2011 | China (R3) | Hamilton's 3-stop beats Vettel's 2-stop late; Webber P18 → P3 on fresh tyres |
+| 2012 | Spain (R5) | Maldonado vs Alonso, decided by undercuts at both stops |
+| 2013 | Spain (R5) | Alonso wins from P5 on a 4-stop; Räikkönen 3-stop second (high-deg Pirellis) |
+| 2014 | Bahrain (R3) | "Duel in the Desert": late SC, Rosberg on options vs Hamilton on primes |
+| 2015 | Malaysia (R2) | Vettel stays out under the early SC and beats both Mercedes |
+| 2016 | Spain (R5) | Verstappen's first win on a 2-stop vs Räikkönen; Vettel's 3-stop fails |
+| 2017 | Spain (R5) | Hamilton vs Vettel: VSC stop + offset tyres decide it |
+| 2018 | China (R3) | Red Bull double-stack under SC; Ricciardo P6 → win on fresh softs |
+| 2019 | Hungary (R12) | Hamilton's second stop to chase down Verstappen on old hards |
+| 2020 | 70th Anniversary (R5) | Verstappen on hards out-manages Mercedes' blistering tyres |
+| 2021 | Spain (R4) | Hamilton's 2-stop reels in Verstappen's 1-stop |
+| 2022 | Hungary (R13) | Verstappen P10 → win; Ferrari's hard-tyre call sinks Leclerc |
+| 2023 | Singapore (R15) | Sainz manages the pack; Mercedes' late VSC 2-stop charge falls short |
+| 2024 | Italy (R16) | Leclerc's 1-stop beats McLaren's 2-stop |
+| 2025 | Hungary (R14) | Norris's 1-stop beats Piastri's 2-stop by 0.7 s |
+
+To build: the builder takes `--season` but assumes 2026 (team ids/colours, engineers, 22-car
+grid, PROFILES by circuit). Needs per-season teams + colours, a `--races` list, era tyre
+profiles (2011–13 high deg; 2011–18 compound names differ), Commons media for past drivers,
+and a "Classics" row in the circuit picker. AI strategy templates come from the real pit laps.
+
+## Done 2026-10-17 (owner feedback, 2026-10-16)
 
 1. **Speed control as a slider**, not just 1×/4×/16× presets.
 2. **More agency than Push/Conserve.** The player should feel they can act every few laps.
@@ -160,7 +194,6 @@ other in ≥ 30% of paired seeds. No strategy family wins > 70% of paired seeds.
 ## Later (don't build yet)
 
 - Practice session: limited runs reveal noisy wear clues; sets used cost race sets.
-- Rival strategist AI that covers your undercut.
 - Beat-the-real-strategist mode.
 - Weather / radar, intermediate and wet tyres.
 - Daily seeded challenge + leaderboard (`/server`: Express + Postgres).

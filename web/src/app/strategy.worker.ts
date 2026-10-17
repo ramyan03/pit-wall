@@ -3,16 +3,28 @@
 //
 // 'hint': from the current RaceState, try one more stop at each (lap × compound).
 // 'recommend': from the grid, try start compound × 1-stop / 2-stop plans.
+// 'compare': score each answer to a radio decision (a list of player commands) by its best
+//   continuation: no further stop if the two-compound rule allows it, else one more stop.
 // Sample i uses the same race key for every candidate (common random numbers), so candidates
 // are compared on the same futures: same incidents, same noise.
-import { runToFinish, type Compound, type PlannedStop, type RaceState, type TrackData } from '@pit-wall/engine';
+import {
+  applyCommand,
+  runToFinish,
+  type Compound,
+  type PlannedStop,
+  type PlayerCommand,
+  type RaceState,
+  type TrackData,
+} from '@pit-wall/engine';
 
 export interface WorkerRequest {
-  kind: 'hint' | 'recommend';
+  kind: 'hint' | 'recommend' | 'compare';
   id: number;
   track: TrackData;
   state: RaceState;
   samples: number;
+  /** 'compare' only: the commands behind each answer. */
+  options?: PlayerCommand[][];
 }
 
 export interface Plan {
@@ -25,11 +37,13 @@ export interface Plan {
 
 export interface HintResponse {
   id: number;
-  kind: 'hint' | 'recommend';
+  kind: 'hint' | 'recommend' | 'compare';
   /** Best plans, best first. */
   plans: Plan[];
   /** 'hint' only: best pit window per compound. */
   windows: { compound: Compound; from: number; to: number; meanPos: number }[];
+  /** 'compare' only: expected finishing position per option, in request order. */
+  estimates?: number[];
   ms: number;
 }
 
@@ -38,13 +52,13 @@ const WINDOW_TOLERANCE = 0.35;
 const HORIZON = 30;
 
 addEventListener('message', ({ data }: MessageEvent<WorkerRequest>) => {
-  postMessage(data.kind === 'hint' ? hint(data) : recommend(data));
+  postMessage(data.kind === 'hint' ? hint(data) : data.kind === 'compare' ? compare(data) : recommend(data));
 });
 
 function evaluator(track: TrackData, state: RaceState, samples: number) {
   const keys = Array.from({ length: samples }, (_, i) => mix(state.rngState, i));
   const me0 = state.cars.find((c) => c.isPlayer)!;
-  return (start: Compound | null, stops: PlannedStop[]): Plan => {
+  return (start: Compound | null, stops: PlannedStop[], commands: PlayerCommand[] = []): Plan => {
     let total = 0;
     let gains = 0;
     for (const key of keys) {
@@ -60,7 +74,8 @@ function evaluator(track: TrackData, state: RaceState, samples: number) {
           strategy: { ...c.strategy, startCompound: compound, stops },
         };
       });
-      const end = runToFinish(track, { ...state, cars, rngState: key });
+      const s0 = commands.reduce(applyCommand, { ...state, cars, rngState: key });
+      const end = runToFinish(track, s0);
       const pos = end.cars.find((c) => c.isPlayer)!.position;
       total += pos;
       if (pos < me0.position) gains++;
@@ -94,6 +109,23 @@ function hint({ id, track, state, samples }: WorkerRequest): HintResponse {
   });
   windows.sort((a, b) => a.meanPos - b.meanPos);
   return { id, kind: 'hint', plans: plans.slice(0, 5), windows, ms: performance.now() - t0 };
+}
+
+function compare({ id, track, state, samples, options = [] }: WorkerRequest): HintResponse {
+  const t0 = performance.now();
+  const evaluate = evaluator(track, state, samples);
+  const lastLap = Math.min(state.totalLaps - 2, state.lap + HORIZON);
+  const estimates = options.map((commands) => {
+    const after = commands.reduce(applyCommand, state).cars.find((c) => c.isPlayer)!;
+    const used = new Set([...after.compoundsUsed, ...(after.pendingBox ? [after.pendingBox] : [])]);
+    const first = state.lap + (after.pendingBox ? 3 : 1);
+    let best = used.size >= 2 ? evaluate(null, [], commands).meanPos : Infinity;
+    for (const compound of COMPOUNDS) {
+      for (let lap = first; lap <= lastLap; lap += 3) best = Math.min(best, evaluate(null, [{ lap, compound }], commands).meanPos);
+    }
+    return best;
+  });
+  return { id, kind: 'compare', plans: [], windows: [], estimates, ms: performance.now() - t0 };
 }
 
 function recommend({ id, track, state, samples }: WorkerRequest): HintResponse {

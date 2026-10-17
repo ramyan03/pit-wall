@@ -2,7 +2,7 @@
 
 A browser-based F1 **race-strategy** game. No driving. A race plays at 1/10 real time
 (~10 s a lap, sector-by-sector live timing, car dots moving on the real circuit outline;
-½×/1×/4×/16×, pausable). The player watches a timing tower, sector and lap times, gaps
+¼×–30× slider, pausable). The player watches a timing tower, sector and lap times, gaps
 and tyre ages, and decides **when to pit, which compound to fit, and the pace mode**.
 Tracks are built from real 2026 races. Today that's Jolpica data plus manual tyre
 estimates (FastF1 live timing returns 401). The FastF1 fit is the goal (PLAN.md D1/D2).
@@ -105,6 +105,21 @@ tempMult = 1 + tempSens × (trackTemp − refTemp)
   each pit lap by ±`pitLapJitter`. It pits under SC/VSC if within `neutralisedPitWindow`
   laps of a planned stop.
 - **Grid:** 2026: 22 cars, 11 teams (Cadillac joined).
+- **Out-lap:** the first lap on a new set (or after a red-flag restart) costs
+  `WARMUP_PENALTY[c]` (Hard slowest). With pit-exit traffic and the fresh-tyre delta, that is
+  what makes the undercut/overcut work.
+- **Undercut cover:** when a car pits within `UNDERCUT_RANGE` of the AI car directly ahead, and
+  that car's next stop is due within `COVER_WINDOW` laps, it boxes next lap with `COVER_PROB`
+  (its own cover stream). Emits `cover`.
+- **Battery (`ERS`):** 0–1 per car. Attack (faster, easier to pass) and Defend (harder to be
+  passed) spend charge. Harvest is slower but recharges. With too little charge for a lap the
+  car drops to neutral (`battery_empty`). Green-flag laps only. AI cars stay neutral.
+- **Push targets:** `push_for N` sets push until `pushUntil`, then neutral (`push_done`).
+- **Team orders (player only):** `hold_up` = teammate defends against anyone but the player
+  and loses `HOLD_UP_COST`/lap while a rival follows; `let_by` = teammate yields when the
+  player is inside `followGap`.
+- Pace, battery, push and orders take effect from the player's next lap. BOX keeps its own
+  pit-entry timing.
 
 ### Difficulty
 
@@ -119,8 +134,9 @@ drawn once per race from the seeded RNG and stored in `RaceState.effectiveTyres`
 
 ### Sim speed
 
-1× = 1/10 real time (`TIME_SCALE` in `race-store.ts`), plus ½×, 4×, 16× and pause. Auto-drop
-to 1× on SC/VSC/red or when a car within ±2 positions of the player pits. The engine still
+1× = 1/10 real time (`TIME_SCALE` in `race-store.ts`). A log-scale slider runs ¼×–30×, plus
+pause. Auto-drop to 1× on SC/VSC/red, when a car within ±2 positions of the player pits, or
+when a radio decision opens. The engine still
 steps whole laps. The UI plays each lap out in race time. A BOX call before pit entry
 (90% of the lap) re-simulates that lap. Later, it applies to the next lap.
 
@@ -160,5 +176,10 @@ For each race, fit from FastF1 laps:
 - `web/src/app/race-store.ts`: live playback (race clock, sector timing, BOX re-sim, radio)
 - `web/src/app/visibility.ts`: the single Hard-mode hidden-info selector (convention #4)
 - `web/src/app/radio.ts`: fictional engineers + radio lines
+- `web/src/app/chatter.ts`: engineer reads on rivals (going long, two-stop, pace dropping,
+  closing/catching) from timing-screen info only. Safe in Hard mode.
+- Radio decisions live in `race-store.ts` (`ask` / `maybeDecide` / `answer`). The worker's
+  `compare` request scores each answer by its best continuation (Easy/Normal only).
+- `engine/test/agency.test.ts`: undercut, cover, battery, push targets, team orders
 - `data/pitwall/build_jolpica.py`: season builder (see Data pipeline)
 - `data/pitwall/fetch_race.py`: loads one session and prints lap/stint/status counts

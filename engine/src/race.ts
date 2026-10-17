@@ -16,6 +16,7 @@
  *     - per-car lap stream (key, lap, driver): lap noise, S1 jitter, S2 jitter, overtake chance,
  *       then the held-up gap if the pass fails
  *     - per-car pit stream (key, lap, driver): stationary noise, slow-stop chance, slow extra
+ *     - per-car cover stream (key, lap, driver): one draw when an AI car may cover an undercut
  *   'driver' is the driver's index in track.drivers, so running order doesn't matter.
  */
 import { Rng } from './rng';
@@ -23,6 +24,7 @@ import type {
   CarState,
   Compound,
   CompoundModel,
+  ErsMode,
   PaceMode,
   PlannedStop,
   PlayerCommand,
@@ -60,6 +62,27 @@ export const STATIONARY_SIGMA = 0.2;
 export const SECTOR_SIGMA = 0.08;
 /** Hard mode: trueDeg = deg × lognormal(0, σ). */
 export const HARD_DEG_SIGMA = 0.15;
+/** PLACEHOLDER: out-lap warm-up penalty (s). Harder compounds take longer to switch on. */
+export const WARMUP_PENALTY: Record<Compound, number> = { S: 0.5, M: 0.9, H: 1.5 };
+/** PLACEHOLDER: battery modes. `charge` is the change in battery per lap (battery is 0–1). */
+export const ERS: Record<ErsMode, { lapDelta: number; charge: number }> = {
+  neutral: { lapDelta: 0, charge: 0.05 },
+  attack: { lapDelta: -0.15, charge: -0.25 },
+  defend: { lapDelta: 0, charge: -0.2 },
+  harvest: { lapDelta: 0.25, charge: 0.2 },
+};
+/** PLACEHOLDER: Attack lowers the pace advantage needed to pass and adds to the pass chance. */
+export const ATTACK_BONUS = { delta: 0.3, prob: 0.2 };
+/** PLACEHOLDER: Defend (or a teammate holding up) raises the advantage needed and scales the pass chance. */
+export const DEFEND_EFFECT = { delta: 0.3, probMult: 0.4 };
+/** PLACEHOLDER: lap time a teammate gives up while holding up a rival. */
+export const HOLD_UP_COST = 0.3;
+/** PLACEHOLDER: an AI car covers when the car pitting behind it is within this gap (s)... */
+export const UNDERCUT_RANGE = 3;
+/** ...and its own next stop is due within this many laps... */
+export const COVER_WINDOW = 8;
+/** ...with this probability (cover stream). */
+export const COVER_PROB = 0.7;
 /** AI never makes a planned stop this close to the flag. */
 const NO_STOP_FINAL_LAPS = 1;
 
@@ -153,6 +176,10 @@ export function createRace(track: TrackData, config: RaceConfig): RaceState {
       stints: [{ compound: strategy.startCompound, startLap: 1, endLap: null }],
       compoundsUsed: [strategy.startCompound],
       paceMode: 'neutral',
+      pushUntil: null,
+      battery: 1,
+      ersMode: 'neutral',
+      teamOrder: 'none',
       strategy,
       pitStops: 0,
       pendingBox: null,
@@ -228,6 +255,24 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
   // Who boxes at the end of this lap (no RNG).
   const boxTo = order.map((c) => pitDecision(c, lap, total, status));
 
+  // Battery: Attack/Defend need the charge for a whole lap, else the car drops to neutral.
+  const ers = order.map((c): ErsMode => {
+    if (c.ersMode === 'attack' || c.ersMode === 'defend') {
+      if (c.battery + ERS[c.ersMode].charge < 0) {
+        c.ersMode = 'neutral';
+        if (c.isPlayer) events.push({ type: 'battery_empty', lap, driver: c.driver });
+      }
+    }
+    return status === 'green' ? c.ersMode : 'neutral';
+  });
+
+  // Team orders (player only): the teammate holds up whoever follows it, or lets the player by.
+  const player = order.find((c) => c.isPlayer);
+  const teamOrder = player?.teamOrder ?? 'none';
+  const mate = player ? order.findIndex((c) => !c.isPlayer && c.teamId === player.teamId) : -1;
+  const holding = (defender: number, attacker: number) =>
+    teamOrder === 'hold_up' && defender === mate && !order[attacker]!.isPlayer;
+
   // (2) Natural lap times + noise, and the natural S1/S2 split.
   const [f1, f2] = track.sectorFractions;
   const split: [number, number][] = [];
@@ -235,7 +280,12 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
   const lapTimes = order.map((c, i) => {
     const rng = carRngs[i]!;
     const noise = rng.normal(0, track.noiseSigma);
-    const lt = naturalLapTime(track, state.effectiveTyres, c, lap, total) + noise;
+    let lt = naturalLapTime(track, state.effectiveTyres, c, lap, total) + noise + ERS[ers[i]!].lapDelta;
+    if (c.tyreAge === 0 && lap > 1) lt += WARMUP_PENALTY[c.compound]; // out-lap (or red-flag restart)
+    if (status === 'green' && teamOrder === 'hold_up' && i === mate && i + 1 < order.length) {
+      const follower = order[i + 1]!;
+      if (!follower.isPlayer && c.totalTime - follower.totalTime > -track.traffic.followGap) lt += HOLD_UP_COST;
+    }
     split.push([f1 * lt + rng.normal(0, SECTOR_SIGMA), f2 * lt + rng.normal(0, SECTOR_SIGMA)]);
     return lt;
   });
@@ -255,9 +305,21 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
       let t = startTimes[i]! + lapTimes[i]!;
       if (boxTo[i] === null && ahead >= 0) {
         const aheadT = newTimes[ahead]!;
-        if (t < aheadT + MIN_FOLLOW_GAP) {
+        // Let by: the teammate yields to the player anywhere inside followGap.
+        const letBy = order[i]!.isPlayer && teamOrder === 'let_by' && ahead === mate && t < aheadT + track.traffic.followGap;
+        if (t < aheadT + MIN_FOLLOW_GAP || letBy) {
           const advantage = lapTimes[ahead]! - lapTimes[i]!;
-          const gotBy = advantage > track.traffic.overtakeDelta || carRngs[i]!.chance(track.traffic.overtakeProb);
+          let needed = track.traffic.overtakeDelta;
+          let prob = track.traffic.overtakeProb;
+          if (ers[i] === 'attack') {
+            needed -= ATTACK_BONUS.delta;
+            prob += ATTACK_BONUS.prob;
+          }
+          if (ers[ahead] === 'defend' || holding(ahead, i)) {
+            needed += DEFEND_EFFECT.delta;
+            prob *= DEFEND_EFFECT.probMult;
+          }
+          const gotBy = letBy || advantage > needed || carRngs[i]!.chance(prob);
           const passT = Math.max(Math.min(t, aheadT - MIN_FOLLOW_GAP), next >= 0 ? newTimes[next]! + MIN_FOLLOW_GAP : -Infinity);
           if (gotBy && passT < aheadT) {
             t = passT;
@@ -318,6 +380,32 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
     car.pendingBox = null;
     if (car.strategy.stops.length > 0 && car.strategy.stops[0]!.lap <= lap + car.strategy.neutralisedPitWindow) {
       car.strategy = { ...car.strategy, stops: car.strategy.stops.slice(1) };
+    }
+  }
+
+  // Undercut cover: the car directly ahead of a car that just pitted may box next lap.
+  if (status === 'green' && lap + 1 <= total - NO_STOP_FINAL_LAPS) {
+    for (let i = 1; i < order.length; i++) {
+      if (boxTo[i] === null || boxTo[i] === undefined) continue;
+      const j = i - 1;
+      const rival = order[j]!;
+      const next = rival.strategy.stops[0];
+      if (rival.isPlayer || rival.status !== 'running' || boxTo[j] !== null || !next) continue;
+      if (startTimes[i]! - startTimes[j]! > UNDERCUT_RANGE || next.lap <= lap + 1 || next.lap - lap > COVER_WINDOW) continue;
+      if (!new Rng(streamSeed(key, lap, driverIdx.get(rival.driver)!, SALT_COVER)).chance(COVER_PROB)) continue;
+      rival.strategy = { ...rival.strategy, stops: [{ ...next, lap: lap + 1 }, ...rival.strategy.stops.slice(1)] };
+      events.push({ type: 'cover', lap, driver: rival.driver, rival: order[i]!.driver });
+    }
+  }
+
+  // Battery and push targets roll over at the line.
+  for (let i = 0; i < order.length; i++) {
+    const car = order[i]!;
+    car.battery = Math.min(1, Math.max(0, car.battery + ERS[ers[i]!].charge));
+    if (car.pushUntil !== null && lap >= car.pushUntil) {
+      car.paceMode = 'neutral';
+      car.pushUntil = null;
+      if (car.isPlayer) events.push({ type: 'push_done', lap, driver: car.driver });
     }
   }
 
@@ -398,6 +486,7 @@ export function stepLap(track: TrackData, state: RaceState): RaceState {
 const SALT_INCIDENT = 0x1c1d;
 const SALT_LAP = 0x1a9e;
 const SALT_PIT = 0x9175;
+const SALT_COVER = 0xc0e5;
 
 /** Seed for an independent stream: a 32-bit hash of (key, lap, car, purpose). */
 export function streamSeed(key: number, lap: number, car: number, salt: number): number {
@@ -473,7 +562,13 @@ export function applyCommand(state: RaceState, cmd: PlayerCommand): RaceState {
       case 'cancel_box':
         return { ...car, pendingBox: null };
       case 'set_pace':
-        return { ...car, paceMode: cmd.mode };
+        return { ...car, paceMode: cmd.mode, pushUntil: null };
+      case 'push_for':
+        return { ...car, paceMode: 'push' as const, pushUntil: state.lap + cmd.laps };
+      case 'set_ers':
+        return { ...car, ersMode: cmd.mode };
+      case 'team_order':
+        return { ...car, teamOrder: cmd.order };
     }
   });
   return { ...state, cars };

@@ -9,6 +9,9 @@
  * - Laps are computed just in time (when the leader starts them). A BOX call re-simulates the
  *   player's current lap from its start state; per-lap RNG streams mean nothing else that's
  *   already on screen changes, except through the race itself (traffic behind you).
+ * - Pace, battery, push targets and team orders take effect from the player's next lap.
+ * - Radio decisions: at key moments the engineer asks a question with 2–3 answers. Where hints
+ *   are allowed the worker scores each answer (expected finishing position).
  */
 import { computed, Injectable, signal } from '@angular/core';
 import {
@@ -18,21 +21,52 @@ import {
   type CarState,
   type Compound,
   type Difficulty,
+  type ErsMode,
   type PaceMode,
+  type PlayerCommand,
   type RaceEvent,
   type RaceState,
+  type TeamOrder,
   type TrackData,
 } from '@pit-wall/engine';
+import { readRivals, type ReadKind } from './chatter';
 import type { Circuit, RealResult } from './data';
 import { finishLine, firstName, gapUpdate, radioFor, type RadioContext, type RadioLine } from './radio';
 import type { HintResponse, WorkerRequest } from './strategy.worker';
 import { hintsAllowed } from './visibility';
 
-export type Speed = 0 | 0.5 | 1 | 4 | 16;
+/** Playback multiplier: 0 = paused, else MIN_SPEED–MAX_SPEED. */
+export type Speed = number;
+export const MIN_SPEED = 0.25;
+export const MAX_SPEED = 30;
 /** Race seconds per wall second at 1×: 1/10 real time. */
 export const TIME_SCALE = 10;
 /** Past this share of the lap, a BOX call is too late for the pit entry and goes to next lap. */
 const PIT_ENTRY = 0.9;
+/** A rival pitting within this gap (s) or ±2 places triggers an undercut decision. */
+const DECISION_GAP = 4;
+/** Laps between chatter reads, and before the same read about the same driver repeats. */
+const CHATTER_EVERY = 2;
+const CHATTER_COOLDOWN = 10;
+/** Worker samples per decision answer. */
+const COMPARE_SAMPLES = 10;
+
+export interface DecisionOption {
+  label: string;
+  commands: PlayerCommand[];
+  /** Expected finishing position (worker), or null while pending / when hints are off. */
+  estimate: number | null;
+}
+
+export interface Decision {
+  id: number;
+  lap: number;
+  prompt: string;
+  options: DecisionOption[];
+  /** Race time it was asked, and when it lapses (no answer = do nothing). */
+  t: number;
+  expiresT: number;
+}
 
 export interface RaceSetup {
   seed: number;
@@ -84,6 +118,8 @@ export class RaceStore {
   readonly autoSlow = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
   readonly showResults = signal(false);
+  readonly decision = signal<Decision | null>(null);
+  readonly decisionPending = signal(false);
 
   private timed: TimedEvent[] = [];
   private processedT = -Infinity;
@@ -91,6 +127,11 @@ export class RaceStore {
   private lastFrame = 0;
   private worker: Worker | null = null;
   private hintId = 0;
+  private compareId = 0;
+  private decisionLap = new Map<string, number>();
+  private chatterLap = -Infinity;
+  private chatterSeen = new Map<string, number>();
+  private lastSpeed: Speed = 1;
 
   readonly head = computed(() => this.history().at(-1) ?? null);
   readonly difficulty = computed(() => this.history()[0]?.config.difficulty ?? 'normal');
@@ -257,6 +298,10 @@ export class RaceStore {
     this.autoSlow.set(null);
     this.notice.set(null);
     this.showResults.set(false);
+    this.decision.set(null);
+    this.decisionLap.clear();
+    this.chatterSeen.clear();
+    this.chatterLap = -Infinity;
     this.history.set([s0]);
     const first = Math.min(...s0.cars.map((c) => c.totalTime));
     this.timed.push({ t: first, e: s0.events[0]! });
@@ -273,9 +318,15 @@ export class RaceStore {
   }
 
   setSpeed(speed: Speed): void {
-    this.speed.set(speed);
+    const v = speed <= 0 ? 0 : Math.min(MAX_SPEED, Math.max(MIN_SPEED, speed));
+    if (v > 0) this.lastSpeed = v;
+    this.speed.set(v);
     this.autoSlow.set(null);
-    if (speed > 0) this.loop();
+    if (v > 0) this.loop();
+  }
+
+  togglePause(): void {
+    this.setSpeed(this.speed() > 0 ? 0 : this.lastSpeed);
   }
 
   /** Skip to the next lap line for the player (useful while paused). */
@@ -319,20 +370,69 @@ export class RaceStore {
   });
 
   setPace(mode: PaceMode): void {
+    this.nextLap({ type: 'set_pace', mode });
+  }
+  pushFor(laps: number): void {
+    this.nextLap({ type: 'push_for', laps });
+  }
+  setErs(mode: ErsMode): void {
+    this.nextLap({ type: 'set_ers', mode });
+  }
+  setTeamOrder(order: TeamOrder): void {
+    this.nextLap({ type: 'team_order', order });
+  }
+
+  /** Apply a command from the player's next lap (this lap's sectors are already being timed). BOX keeps its own timing. */
+  private nextLap(cmd: PlayerCommand): void {
+    if (cmd.type === 'box' || cmd.type === 'cancel_box') return this.box(cmd.type === 'box' ? cmd.compound : null);
     const me = this.me();
     const hist = this.history();
     if (!me || me.finished) return;
-    // Takes effect from the player's next lap (this lap's sectors are already being timed).
     const L = me.completedLaps + 1;
-    if (hist[L]) this.rebuildFrom(L, applyCommand(hist[L]!, { type: 'set_pace', mode }));
+    if (hist[L]) this.rebuildFrom(L, applyCommand(hist[L]!, cmd));
   }
 
-  readonly paceMode = computed<PaceMode>(() => {
+  /** The player's car as it will start their next lap (what the controls show as set). */
+  private readonly nextState = computed(() => {
     const me = this.me();
     const hist = this.history();
-    if (!me) return 'neutral';
-    return (hist[me.completedLaps + 1] ?? hist[me.completedLaps])!.cars.find((c) => c.isPlayer)!.paceMode;
+    if (!me) return null;
+    return (hist[me.completedLaps + 1] ?? hist[me.completedLaps])!.cars.find((c) => c.isPlayer)!;
   });
+  readonly paceMode = computed<PaceMode>(() => this.nextState()?.paceMode ?? 'neutral');
+  readonly pushUntil = computed(() => this.nextState()?.pushUntil ?? null);
+  readonly ersMode = computed<ErsMode>(() => this.nextState()?.ersMode ?? 'neutral');
+  readonly teamOrder = computed<TeamOrder>(() => this.nextState()?.teamOrder ?? 'none');
+  /** Battery as of the player's last line crossing. */
+  readonly battery = computed(() => this.me()?.car.battery ?? 1);
+  readonly teammate = computed(() => {
+    const me = this.me();
+    return me ? (this.live().find((c) => !c.isPlayer && c.teamId === me.teamId) ?? null) : null;
+  });
+
+  /** Compound to suggest for a stop: the hint's if it's legal, else one that suits the laps left. */
+  suggestedCompound(): Compound {
+    const me = this.me()?.car;
+    const total = this.history()[0]?.totalLaps;
+    if (!me || !total) return 'H';
+    const ruleOk = (c: Compound) => me.compoundsUsed.length >= 2 || c !== me.compound;
+    const hinted = this.hint()?.windows[0]?.compound;
+    if (hinted && ruleOk(hinted)) return hinted;
+    const left = total - this.leaderLap();
+    const pref: Compound[] = left > total * 0.45 ? ['H', 'M', 'S'] : left > total * 0.25 ? ['M', 'H', 'S'] : ['S', 'M', 'H'];
+    return pref.find(ruleOk)!;
+  }
+
+  answer(i: number): void {
+    const d = this.decision();
+    if (!d) return;
+    const opt = d.options[i];
+    this.decision.set(null);
+    this.decisionPending.set(false);
+    if (!opt) return;
+    for (const cmd of opt.commands) this.nextLap(cmd);
+    this.radio.update((r) => [...r, { t: this.simTime(), lap: d.lap, who: 'drv' as const, text: `Copy. ${opt.label}.` }]);
+  }
 
   requestHint(): void {
     const track = this.track();
@@ -365,6 +465,13 @@ export class RaceStore {
   private createWorker(): Worker {
     const w = new Worker(new URL('./strategy.worker', import.meta.url), { type: 'module' });
     w.onmessage = ({ data }: MessageEvent<HintResponse>) => {
+      if (data.kind === 'compare') {
+        const d = this.decision();
+        if (!d || data.id !== d.id) return; // answered or lapsed
+        this.decisionPending.set(false);
+        this.decision.set({ ...d, options: d.options.map((o, i) => ({ ...o, estimate: data.estimates?.[i] ?? null })) });
+        return;
+      }
       if (data.id !== this.hintId) return; // stale
       this.hintPending.set(false);
       if (this.pendingRecommend?.id === data.id) {
@@ -509,6 +616,11 @@ export class RaceStore {
     };
     const lines: RadioLine[] = [];
     let slow: string | null = null;
+    const d0 = this.decision();
+    if (d0 && T > d0.expiresT) {
+      this.decision.set(null);
+      this.decisionPending.set(false);
+    }
     const nearby = new Set(
       this.live()
         .filter((c) => !c.isPlayer && Math.abs(c.position - meLive.position) <= 2)
@@ -522,6 +634,7 @@ export class RaceStore {
       else if (e.type === 'vsc_deployed') slow = 'Virtual safety car';
       else if (e.type === 'red_flag') slow = 'Red flag';
       else if (e.type === 'pit_stop' && nearby.has(e.driver)) slow = `${e.driver} pitted`;
+      this.maybeDecide(e, t, ctx);
       if (e.type === 'race_finish') {
         const meEnd = hist.at(-1)!.cars.find((c) => c.isPlayer)!;
         lines.push(...finishLine(t + 8, e.lap, { ...ctx, me: meEnd }));
@@ -532,12 +645,109 @@ export class RaceStore {
     if (myLineT > this.processedT && myLineT <= T) {
       const g = gapUpdate(myLineT, meLive.completedLaps, ctx);
       if (g) lines.push(g);
+      lines.push(...this.chatter(myLineT, meLive.completedLaps, ctx));
     }
     this.processedT = T;
     if (lines.length) this.radio.update((r) => [...r, ...lines].slice(-80));
+    const d1 = this.decision();
+    if (!slow && d1 && d1 !== d0) slow = 'Radio decision';
     if (slow && this.speed() > 1) {
       this.speed.set(1);
       this.autoSlow.set(slow);
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Chatter and radio decisions
+
+  /** One rival read at most every CHATTER_EVERY laps. Closing / catching may open a decision. */
+  private chatter(t: number, lap: number, ctx: RadioContext): RadioLine[] {
+    if (lap - this.chatterLap < CHATTER_EVERY) return [];
+    const reads = readRivals(this.track()!, this.history(), lap, ctx.names);
+    const fresh = reads.find((r) => lap - (this.chatterSeen.get(r.kind + r.driver) ?? -Infinity) >= CHATTER_COOLDOWN);
+    if (!fresh) return [];
+    this.chatterLap = lap;
+    this.chatterSeen.set(fresh.kind + fresh.driver, lap);
+    if (fresh.kind === 'closing' || fresh.kind === 'catching') this.askBattle(fresh.kind, fresh.driver, t, lap, ctx);
+    return [{ t: t + 2, lap, who: 'eng', text: fresh.text }];
+  }
+
+  private askBattle(kind: ReadKind, code: string, t: number, lap: number, ctx: RadioContext): void {
+    const rival = ctx.state.cars.find((c) => c.driver === code);
+    const gap = rival ? Math.abs(rival.totalTime - ctx.me.totalTime) : Infinity;
+    if (!rival || gap > 1.2) return;
+    const who = this.surname(code);
+    if (kind === 'closing') {
+      this.ask('defend', t, lap, `${who} is ${gap.toFixed(1)} behind and closing. Defend?`, [
+        { label: 'Defend, use the battery', commands: [{ type: 'set_ers', mode: 'defend' }] },
+        { label: 'Let him go, save the tyres', commands: [{ type: 'set_pace', mode: 'conserve' }, { type: 'set_ers', mode: 'harvest' }] },
+        { label: 'Keep doing what we are doing', commands: [] },
+      ]);
+    } else {
+      const mate = rival.teamId === ctx.me.teamId;
+      this.ask('attack', t, lap, mate ? `We're right behind ${who}, and we're quicker.` : `We're right with ${who}. Go for it?`, [
+        mate
+          ? { label: `Ask ${who} to let you by`, commands: [{ type: 'team_order', order: 'let_by' }] }
+          : { label: 'Attack, deploy the battery', commands: [{ type: 'set_ers', mode: 'attack' }] },
+        { label: 'Push for 3 laps', commands: [{ type: 'push_for', laps: 3 }] },
+        { label: 'Hold position, harvest', commands: [{ type: 'set_ers', mode: 'harvest' }] },
+      ]);
+    }
+  }
+
+  /** Radio decisions triggered by race events (neutralisations, rivals pitting near us). */
+  private maybeDecide(e: RaceEvent, t: number, ctx: RadioContext): void {
+    const me = ctx.me;
+    if (me.status !== 'running' || this.pendingBox()) return;
+    const left = ctx.state.totalLaps - e.lap;
+    const c = this.suggestedCompound();
+    const tyre = { S: 'softs', M: 'mediums', H: 'hards' }[c];
+    if ((e.type === 'sc_deployed' || e.type === 'vsc_deployed') && me.tyreAge >= 5 && left > 3) {
+      const sc = e.type === 'sc_deployed' ? 'Safety car' : 'VSC';
+      this.ask('neutralised', t, e.lap, `${sc}. A stop is cheap now. Box for ${tyre}?`, [
+        { label: `Box for ${tyre}`, commands: [{ type: 'box', compound: c }] },
+        { label: 'Stay out, keep track position', commands: [] },
+      ]);
+    } else if (e.type === 'pit_stop' && e.driver !== me.driver && left > 5 && me.tyreAge >= 5) {
+      // Where the rival was relative to us at the start of the lap it boxed.
+      const rival = ctx.state.cars.find((x) => x.driver === e.driver);
+      if (!rival) return;
+      const dPos = rival.position - me.position;
+      if (Math.abs(dPos) > 2 && Math.abs(rival.totalTime - me.totalTime) > DECISION_GAP) return;
+      const who = this.surname(e.driver);
+      if (dPos > 0) {
+        this.ask('undercut', t, e.lap, `${who} has boxed behind us. That's the undercut. Cover?`, [
+          { label: `Box this lap for ${tyre}`, commands: [{ type: 'box', compound: c }] },
+          { label: 'Stay out and push 3 laps (overcut)', commands: [{ type: 'push_for', laps: 3 }] },
+          { label: 'Stay out, stick to the plan', commands: [] },
+        ]);
+      } else {
+        this.ask('overcut', t, e.lap, `${who} has boxed ahead of us. Clear air now.`, [
+          { label: 'Push 3 laps, try the overcut', commands: [{ type: 'push_for', laps: 3 }] },
+          { label: `Box this lap for ${tyre} too`, commands: [{ type: 'box', compound: c }] },
+          { label: 'Stick to the plan', commands: [] },
+        ]);
+      }
+    }
+  }
+
+  /** Open a decision: one at a time, each kind at most once per 3 laps. */
+  private ask(kind: string, t: number, lap: number, prompt: string, options: Omit<DecisionOption, 'estimate'>[]): void {
+    if (this.decision() || lap - (this.decisionLap.get(kind) ?? -Infinity) < 3) return;
+    this.decisionLap.set(kind, lap);
+    const lapLen = this.history().at(-1)!.cars[0]!.lastLapTime ?? 100;
+    const id = ++this.compareId;
+    this.decision.set({ id, lap, prompt, t, expiresT: t + lapLen, options: options.map((o) => ({ ...o, estimate: null })) });
+    const me = this.me();
+    if (this.hintsAllowed() && me) {
+      this.decisionPending.set(true);
+      const state = this.history()[me.completedLaps]!;
+      this.post({ kind: 'compare', id, track: this.track()!, state, samples: COMPARE_SAMPLES, options: options.map((o) => o.commands) });
+    }
+  }
+
+  private surname(code: string): string {
+    const n = this.track()?.drivers.find((d) => d.code === code)?.fullName ?? code;
+    return n.split(' ').slice(1).join(' ') || n;
   }
 }

@@ -125,6 +125,15 @@ export function radioFor(e: RaceEvent, t: number, ctx: RadioContext): RadioLine[
         return [drv(pick(['Tyres are gone, mate. The rears are finished.', "I've got no rears left!", 'These tyres are dead.'], s))];
       }
       return [];
+    case 'cover':
+      if (e.rival === me.driver) return [eng(`${surname(ctx, e.driver)} is reacting, he'll box this lap to cover us.`)];
+      return [];
+    case 'push_done':
+      if (e.driver !== me.driver) return [];
+      return [eng(pick(['Okay, push target done. Back to standard pace.', 'That was the push. Back to neutral now.'], s))];
+    case 'battery_empty':
+      if (e.driver !== me.driver) return [];
+      return [drv(pick(["Battery's flat!", "I've got nothing left to deploy."], s)), eng('Battery empty. Harvest for a few laps.')];
     case 'race_finish':
       return [];
   }

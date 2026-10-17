@@ -972,6 +972,93 @@ td {
   }
 }
 
+.push-row,
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.speed-row {
+  flex-wrap: nowrap;
+  input[type='range'] {
+    flex: 1;
+    min-width: 0;
+    accent-color: var(--ink);
+  }
+  .speed-val {
+    font: 700 13px var(--mono);
+    min-width: 3.5ch;
+    text-align: right;
+  }
+}
+.battery {
+  position: relative;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-2);
+  overflow: hidden;
+  .battery-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: color-mix(in srgb, var(--good) 55%, transparent);
+    transition: width 0.4s ease;
+  }
+  span {
+    position: relative;
+    display: block;
+    text-align: center;
+    font: 600 11px/20px var(--mono);
+  }
+  &.low .battery-fill {
+    background: color-mix(in srgb, var(--warn) 60%, transparent);
+  }
+}
+.seg button[data-ers].on {
+  &[data-ers='attack'] {
+    background: var(--accent);
+    color: #fff;
+  }
+  &[data-ers='defend'] {
+    background: #1d6fe0;
+    color: #fff;
+  }
+  &[data-ers='harvest'] {
+    background: var(--good);
+  }
+}
+.decision {
+  border-color: var(--warn);
+  box-shadow: 0 0 18px rgb(245 180 0 / 0.25);
+  display: grid;
+  gap: 8px;
+  .decision-q {
+    margin: 0;
+    font-weight: 600;
+  }
+  .decision-opts {
+    display: grid;
+    gap: 6px;
+    button {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+    }
+    .est {
+      font: 12px var(--mono);
+      color: var(--ink-2);
+    }
+  }
+  .decision-clock {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--warn);
+    width: calc(var(--left, 1) * 100%);
+  }
+}
+
 .radio ul {
   list-style: none;
   margin: 0;

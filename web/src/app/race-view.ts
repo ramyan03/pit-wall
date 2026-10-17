@@ -1,8 +1,8 @@
 import { Component, computed, inject, output, signal } from '@angular/core';
-import type { Compound, PaceMode } from '@pit-wall/engine';
+import type { Compound, ErsMode, PaceMode, TeamOrder } from '@pit-wall/engine';
 import { CircuitMap, type MapDot } from './circuit-map';
 import { DataService } from './data';
-import { RaceStore, type LiveCar, type Speed } from './race-store';
+import { MAX_SPEED, MIN_SPEED, RaceStore, type LiveCar, type Speed } from './race-store';
 import { ENGINEERS } from './radio';
 import { wearReadout } from './visibility';
 
@@ -30,8 +30,38 @@ export class RaceView {
 
   protected readonly compounds: Compound[] = ['S', 'M', 'H'];
   protected readonly name = NAME;
-  protected readonly speeds: Speed[] = [0.5, 1, 4, 16];
   protected readonly paceModes: PaceMode[] = ['push', 'neutral', 'conserve'];
+  protected readonly ersModes: { mode: ErsMode; label: string; title: string }[] = [
+    { mode: 'attack', label: 'Attack', title: 'Spend charge: quicker and better at passing' },
+    { mode: 'defend', label: 'Defend', title: 'Spend charge: harder to pass' },
+    { mode: 'neutral', label: 'Neutral', title: 'Slow trickle charge' },
+    { mode: 'harvest', label: 'Harvest', title: 'Slower lap, recharges the battery' },
+  ];
+  protected readonly pushLaps = [3, 5, 10];
+  protected readonly teamOrders: { order: TeamOrder; label: string }[] = [
+    { order: 'none', label: 'Race' },
+    { order: 'hold_up', label: 'Hold up rival' },
+    { order: 'let_by', label: 'Let me by' },
+  ];
+
+  /** Share of the radio decision's time left, 0–1 (drives the countdown bar). */
+  protected readonly decisionLeft = computed(() => {
+    const d = this.store.decision();
+    if (!d) return 0;
+    return Math.max(0, Math.min(1, (d.expiresT - this.store.simTime()) / (d.expiresT - d.t)));
+  });
+
+  /** Slider position 0–1 ↔ speed MIN_SPEED–MAX_SPEED on a log scale. */
+  protected sliderValue(speed: Speed): number {
+    const s = speed > 0 ? speed : this.store.speed() || 1;
+    return Math.log(s / MIN_SPEED) / Math.log(MAX_SPEED / MIN_SPEED);
+  }
+  protected onSlider(v: string): void {
+    const raw = MIN_SPEED * Math.pow(MAX_SPEED / MIN_SPEED, Number(v));
+    // Snap to the nice values the label shows.
+    const snapped = raw < 1 ? Math.round(raw * 4) / 4 : raw < 10 ? Math.round(raw * 2) / 2 : Math.round(raw);
+    this.store.setSpeed(snapped);
+  }
   protected readonly showGap = signal(false);
 
   protected readonly track = this.store.track;
@@ -142,7 +172,9 @@ export class RaceView {
   protected readonly myResult = computed(() => this.results()?.find((r) => r.car.isPlayer) ?? null);
 
   protected speedLabel(s: Speed): string {
-    return s === 0.5 ? '½×' : `${s}×`;
+    if (s <= 0) return 'Paused';
+    const frac: Record<number, string> = { 0.25: '¼', 0.5: '½', 0.75: '¾' };
+    return `${frac[s] ?? (Number.isInteger(s) ? s : s.toFixed(1))}×`;
   }
 
   protected lapTime(t: number | null | undefined): string {

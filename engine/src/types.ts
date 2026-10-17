@@ -17,7 +17,10 @@ export type PirelliCompound = 'C1' | 'C2' | 'C3' | 'C4' | 'C5' | 'C6';
 export type PaceMode = 'push' | 'neutral' | 'conserve';
 export type Difficulty = 'easy' | 'normal' | 'hard';
 export type TrackStatus = 'green' | 'sc' | 'vsc' | 'red';
-export type SimSpeed = 1 | 4 | 16;
+/** 2026-style battery deployment. Attack/Defend spend charge, Harvest recharges. */
+export type ErsMode = 'neutral' | 'attack' | 'defend' | 'harvest';
+/** Player's instruction to their teammate. */
+export type TeamOrder = 'none' | 'hold_up' | 'let_by';
 
 /** Driver code, e.g. "RUS". Unique per race. */
 export type DriverCode = string;
@@ -214,6 +217,13 @@ export interface CarState {
   /** Dry compounds used so far, for the two-compound rule. */
   compoundsUsed: Compound[];
   paceMode: PaceMode;
+  /** Last lap of a "push for N laps" target; pace returns to neutral after it. Null = no target. */
+  pushUntil: number | null;
+  /** Battery charge, 0–1. */
+  battery: number;
+  ersMode: ErsMode;
+  /** Player only: what the teammate is told to do. 'none' for everyone else. */
+  teamOrder: TeamOrder;
   strategy: Strategy;
   pitStops: number;
   /** Set for the player when BOX is pressed. Executed at the end of the lap. */
@@ -270,6 +280,10 @@ export type RaceEvent =
   | (EventBase & { type: 'restart' })
   | (EventBase & { type: 'fastest_lap'; driver: DriverCode; time: number })
   | (EventBase & { type: 'radio'; driver: DriverCode; message: string })
+  /** An AI car pits a lap early to cover a rival's undercut. */
+  | (EventBase & { type: 'cover'; driver: DriverCode; rival: DriverCode })
+  | (EventBase & { type: 'push_done'; driver: DriverCode })
+  | (EventBase & { type: 'battery_empty'; driver: DriverCode })
   | (EventBase & { type: 'race_finish'; winner: DriverCode });
 
 export type RaceEventType = RaceEvent['type'];
@@ -277,4 +291,8 @@ export type RaceEventType = RaceEvent['type'];
 export type PlayerCommand =
   | { type: 'box'; compound: Compound }
   | { type: 'cancel_box' }
-  | { type: 'set_pace'; mode: PaceMode };
+  | { type: 'set_pace'; mode: PaceMode }
+  /** Push for `laps` laps from the lap it's applied to, then back to neutral. */
+  | { type: 'push_for'; laps: number }
+  | { type: 'set_ers'; mode: ErsMode }
+  | { type: 'team_order'; order: TeamOrder };
