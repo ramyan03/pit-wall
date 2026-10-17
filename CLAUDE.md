@@ -134,6 +134,8 @@ For each race, fit from FastF1 laps:
 
 - `engine/src/types.ts`: `TrackData`, `RaceState`, `CarState`, `Strategy`, `RaceEvent`, `PlayerCommand`
 - `engine/src/rng.ts`: seeded mulberry32 RNG
-- `engine/src/race.ts`: `createRace` / `stepLap` / `applyCommand` / `simulateRace` (stubs)
+- `engine/src/race.ts`: `createRace` / `stepLap` / `applyCommand` / `simulateRace` (rough v1 of the whole model; RNG draw order documented at the top)
 - `engine/test/fixtures/track.synthetic.json`: hand-made 4-car fixture (`meta.synthetic: true`)
+- `engine/test/fixtures/track.synthetic22.json`: hand-made 22-car, 62-lap fixture. Copied to `web/public/tracks/synthetic-22.json` for the demo UI
+- `web/src/app/visibility.ts`: the single Hard-mode hidden-info selector (convention #4)
 - `data/pitwall/fetch_race.py`: loads one session and prints lap/stint/status counts

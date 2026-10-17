@@ -1,6 +1,8 @@
 # Pit Wall: Plan
 
-Status: **M0 (scaffold) done.** The engine and UI are stubs. No race logic exists yet.
+Status: **M0 done. M1 accepted. Rough v1 demo of M2–M7 in place** (synthetic data, placeholder
+tunables marked `PLACEHOLDER` in `engine/src/race.ts`). Each later milestone still needs its
+acceptance pass against real data. Not started: D1, D2, M8, M9.
 
 ## MVP track: Singapore 2026 (recommended), Monaco 2026 as fallback
 

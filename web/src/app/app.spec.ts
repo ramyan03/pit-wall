@@ -3,9 +3,8 @@ import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    }).compileComponents();
+    globalThis.fetch = (() => new Promise(() => {})) as typeof fetch; // track load never resolves in unit tests
+    await TestBed.configureTestingModule({ imports: [App] }).compileComponents();
   });
 
   it('should create the app', () => {
@@ -13,10 +12,9 @@ describe('App', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render the title', async () => {
+  it('shows the loading state until the track arrives', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Pit Wall');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Loading track');
   });
 });

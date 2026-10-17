@@ -68,7 +68,14 @@
               "buildTarget": "web:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "prebundle": {
+              "exclude": [
+                "@pit-wall/engine"
+              ]
+            }
+          }
         },
         "test": {
           "builder": "@angular/build:unit-test"

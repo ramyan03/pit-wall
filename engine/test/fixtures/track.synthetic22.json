@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "season": 2026,
+    "round": 99,
+    "eventName": "Synthetic Street Circuit (22 cars)",
+    "trackId": "2026-synthetic-22",
+    "laps": 62,
+    "synthetic": true,
+    "source": {
+      "fastf1Version": null,
+      "generatedAt": "2026-10-15T00:00:00Z",
+      "incidentSeasons": []
+    }
+  },
+  "conditions": {
+    "airTempC": 30,
+    "trackTempC": 38,
+    "refTempC": 36
+  },
+  "compoundAllocation": {
+    "S": "C5",
+    "M": "C4",
+    "H": "C3"
+  },
+  "tyres": {
+    "S": {
+      "compoundOffset": -0.7,
+      "degRate": 0.1,
+      "cliffLap": 16,
+      "cliffK": 0.03,
+      "tempSens": 0.012,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    },
+    "M": {
+      "compoundOffset": 0,
+      "degRate": 0.065,
+      "cliffLap": 27,
+      "cliffK": 0.02,
+      "tempSens": 0.01,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    },
+    "H": {
+      "compoundOffset": 0.45,
+      "degRate": 0.04,
+      "cliffLap": 40,
+      "cliffK": 0.012,
+      "tempSens": 0.008,
+      "fit": {
+        "nLaps": 0,
+        "r2": null,
+        "method": "manual"
+      }
+    }
+  },
+  "priorTyres": null,
+  "fuel": {
+    "fuelSecPerLap": 0.045
+  },
+  "trackEvo": 0.01,
+  "noiseSigma": 0.25,
+  "pit": {
+    "pitLoss": 25,
+    "stationaryMean": 2.4,
+    "slowStopProb": 0.05,
+    "slowStopExtra": [
+      1,
+      3
+    ]
+  },
+  "traffic": {
+    "followGap": 1,
+    "overtakeDelta": 0.8,
+    "overtakeProb": 0.15
+  },
+  "incidents": {
+    "scHazardPerLap": 0.016,
+    "vscHazardPerLap": 0.01,
+    "redHazardPerLap": 0.0015,
+    "scDurationLaps": [
+      3,
+      6
+    ],
+    "vscDurationLaps": [
+      1,
+      3
+    ],
+    "scCompressedGap": 0.8,
+    "lapTimeMult": {
+      "sc": 1.4,
+      "vsc": 1.35
+    },
+    "pitLossMult": {
+      "sc": 0.5,
+      "vsc": 0.6
+    }
+  },
+  "teams": [
+    {
+      "id": "aurora",
+      "name": "Aurora",
+      "colour": "#2E6BE6"
+    },
+    {
+      "id": "basalt",
+      "name": "Basalt",
+      "colour": "#E8402F"
+    },
+    {
+      "id": "cobalt",
+      "name": "Cobalt",
+      "colour": "#1BB5A8"
+    },
+    {
+      "id": "dune",
+      "name": "Dune",
+      "colour": "#F28C28"
+    },
+    {
+      "id": "ember",
+      "name": "Ember",
+      "colour": "#B5179E"
+    },
+    {
+      "id": "fjord",
+      "name": "Fjord",
+      "colour": "#4CC9F0"
+    },
+    {
+      "id": "granite",
+      "name": "Granite",
+      "colour": "#8D99AE"
+    },
+    {
+      "id": "halcyon",
+      "name": "Halcyon",
+      "colour": "#2DC653"
+    },
+    {
+      "id": "ion",
+      "name": "Ion",
+      "colour": "#F7D002"
+    },
+    {
+      "id": "jade",
+      "name": "Jade",
+      "colour": "#0B6E4F"
+    },
+    {
+      "id": "kestrel",
+      "name": "Kestrel",
+      "colour": "#E2E2E2"
+    }
+  ],
+  "drivers": [
+    {
+      "code": "AAA",
+      "number": 2,
+      "teamId": "aurora",
+      "basePace": 95.2,
+      "gridPosition": 1
+    },
+    {
+      "code": "BBB",
+      "number": 3,
+      "teamId": "aurora",
+      "basePace": 95.32,
+      "gridPosition": 3
+    },
+    {
+      "code": "CCC",
+      "number": 4,
+      "teamId": "basalt",
+      "basePace": 95.35,
+      "gridPosition": 2
+    },
+    {
+      "code": "DDD",
+      "number": 5,
+      "teamId": "basalt",
+      "basePace": 95.47,
+      "gridPosition": 4
+    },
+    {
+      "code": "EEE",
+      "number": 6,
+      "teamId": "cobalt",
+      "basePace": 95.5,
+      "gridPosition": 5
+    },
+    {
+      "code": "FFF",
+      "number": 7,
+      "teamId": "cobalt",
+      "basePace": 95.62,
+      "gridPosition": 8
+    },
+    {
+      "code": "GGG",
+      "number": 8,
+      "teamId": "dune",
+      "basePace": 95.65,
+      "gridPosition": 7
+    },
+    {
+      "code": "HHH",
+      "number": 9,
+      "teamId": "dune",
+      "basePace": 95.77,
+      "gridPosition": 6
+    },
+    {
+      "code": "III",
+      "number": 10,
+      "teamId": "ember",
+      "basePace": 95.8,
+      "gridPosition": 9
+    },
+    {
+      "code": "JJJ",
+      "number": 11,
+      "teamId": "ember",
+      "basePace": 95.92,
+      "gridPosition": 10
+    },
+    {
+      "code": "KKK",
+      "number": 12,
+      "teamId": "fjord",
+      "basePace": 95.95,
+      "gridPosition": 12
+    },
+    {
+      "code": "LLL",
+      "number": 13,
+      "teamId": "fjord",
+      "basePace": 96.07,
+      "gridPosition": 11
+    },
+    {
+      "code": "MMM",
+      "number": 14,
+      "teamId": "granite",
+      "basePace": 96.1,
+      "gridPosition": 13
+    },
+    {
+      "code": "NNN",
+      "number": 15,
+      "teamId": "granite",
+      "basePace": 96.22,
+      "gridPosition": 14
+    },
+    {
+      "code": "OOO",
+      "number": 16,
+      "teamId": "halcyon",
+      "basePace": 96.25,
+      "gridPosition": 17
+    },
+    {
+      "code": "PPP",
+      "number": 17,
+      "teamId": "halcyon",
+      "basePace": 96.37,
+      "gridPosition": 16
+    },
+    {
+      "code": "QQQ",
+      "number": 18,
+      "teamId": "ion",
+      "basePace": 96.4,
+      "gridPosition": 15
+    },
+    {
+      "code": "RRR",
+      "number": 19,
+      "teamId": "ion",
+      "basePace": 96.52,
+      "gridPosition": 18
+    },
+    {
+      "code": "SSS",
+      "number": 20,
+      "teamId": "jade",
+      "basePace": 96.6,
+      "gridPosition": 19
+    },
+    {
+      "code": "TTT",
+      "number": 21,
+      "teamId": "jade",
+      "basePace": 96.72,
+      "gridPosition": 21
+    },
+    {
+      "code": "UUU",
+      "number": 22,
+      "teamId": "kestrel",
+      "basePace": 96.8,
+      "gridPosition": 20
+    },
+    {
+      "code": "VVV",
+      "number": 23,
+      "teamId": "kestrel",
+      "basePace": 96.92,
+      "gridPosition": 22
+    }
+  ],
+  "strategies": [
+    {
+      "id": "1stop-MH",
+      "stints": [
+        "M",
+        "H"
+      ],
+      "pitLaps": [
+        22
+      ],
+      "pitLapJitter": 4,
+      "weight": 0.45
+    },
+    {
+      "id": "1stop-HM",
+      "stints": [
+        "H",
+        "M"
+      ],
+      "pitLaps": [
+        36
+      ],
+      "pitLapJitter": 4,
+      "weight": 0.2
+    },
+    {
+      "id": "2stop-SMH",
+      "stints": [
+        "S",
+        "M",
+        "H"
+      ],
+      "pitLaps": [
+        13,
+        34
+      ],
+      "pitLapJitter": 2,
+      "weight": 0.25
+    },
+    {
+      "id": "2stop-MHS",
+      "stints": [
+        "M",
+        "H",
+        "S"
+      ],
+      "pitLaps": [
+        18,
+        46
+      ],
+      "pitLapJitter": 3,
+      "weight": 0.1
+    }
+  ]
+}

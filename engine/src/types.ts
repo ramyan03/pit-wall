@@ -183,7 +183,8 @@ export interface StintRecord {
   endLap: number | null;
 }
 
-export type CarStatus = 'running' | 'in_pit' | 'retired' | 'finished';
+/** 'disqualified': finished on one dry compound (two-compound rule, open question #7 proposal: DSQ). */
+export type CarStatus = 'running' | 'in_pit' | 'retired' | 'finished' | 'disqualified';
 
 export interface CarState {
   driver: DriverCode;
