@@ -1,4 +1,5 @@
 // Pit Wall: dark timing-screen look. Global styles (component style budgets are tiny).
+@use "screens";
 
 :root {
   --bg: #0a0c0f;
@@ -20,6 +21,7 @@
   --medium: #ffd60a;
   --hard: #f2f2f2;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color-scheme: dark;
 }

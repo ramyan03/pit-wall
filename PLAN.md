@@ -28,6 +28,12 @@ Each later milestone still needs its acceptance pass against fitted data. D1/D2 
   with real events, the real winner wins most AI-only sims in 2012–15/2020/2021. Others are
   open, which is fine for a redo.
 
+- **2026-10-17:** startup screen (wordmark, gantry, Start the session,
+  Settings/Help/Exit), start-lights loading overlay between every page, home page (Quick race /
+  Learn in 5 laps, modes, featured classic, difficulty), and a 5-lap spotlight tutorial with an
+  engineer bar. Settings is a placeholder (disabled). Exit can't close a tab the user opened, so it
+  says so.
+
 ## Next up
 
 - Owner playtest of the agreed design + classics.

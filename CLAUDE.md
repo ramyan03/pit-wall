@@ -195,6 +195,11 @@ For each race, fit from FastF1 laps:
 - `web/src/app/race-store.ts`: live playback (race clock, sector timing, BOX re-sim, radio)
 - `web/src/app/visibility.ts`: the single Hard-mode hidden-info selector (convention #4)
 - `web/src/app/radio.ts`: fictional engineers + radio lines
+- Screens (`app.ts`): startup → home → tutorial / circuits → pre-race → race. Every page change
+  plays the start-lights overlay (`start-lights.ts`); a race's clock starts when the lights go out.
+  Design source: the "Pit Wall: Home, Startup & Tutorial" canvas (claude.ai artifact JNZgHTj4BMb3EhRPFY9L5L).
+- `web/src/app/tutorial.ts`: scripted 5-lap tutorial (no engine): spotlight one region per lap,
+  engineer bar at the bottom. Screen styles live in `web/src/screens.scss`.
 - `web/src/app/tyres.ts`: nominated compounds + era names per track (use it, never hard-code S/M/H)
 - `engine/test/real-events.test.ts`: real SC/VSC replay, retirements, nominated compounds
 - `web/src/app/chatter.ts`: engineer reads on rivals (going long, two-stop, pace dropping,

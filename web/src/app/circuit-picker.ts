@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, OnInit, output, signal } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, inject, Injector, input, OnInit, output, signal } from '@angular/core';
 import { CircuitMap } from './circuit-map';
 import { DataService, type Circuit, type TrackIndexEntry } from './data';
 
@@ -13,7 +13,10 @@ import { DataService, type Circuit, type TrackIndexEntry } from './data';
           <h1>Pit Wall</h1>
           <p class="tagline">Pick a Grand Prix and call the strategy: the 2026 season, or redo a classic.</p>
         </div>
-        <button class="ghost" (click)="credits.emit()">Credits & sources</button>
+        <div class="picker-actions">
+          <button class="ghost" (click)="home.emit()">← Home</button>
+          <button class="ghost" (click)="credits.emit()">Credits & sources</button>
+        </div>
       </header>
       @if (error()) {
         <p class="bad">{{ error() }}</p>
@@ -25,7 +28,7 @@ import { DataService, type Circuit, type TrackIndexEntry } from './data';
         }
       </div>
       @if (classics().length) {
-        <h2 class="picker-section">Classics <span class="muted small">· one strategy race per season, 2011–2025 · real safety cars and retirements</span></h2>
+        <h2 class="picker-section" id="classics">Classics <span class="muted small">· one strategy race per season, 2011–2025 · real safety cars and retirements</span></h2>
         <div class="circuit-grid">
           @for (t of classics(); track t.trackId) {
             <ng-container *ngTemplateOutlet="card; context: { $implicit: t }" />
@@ -73,8 +76,13 @@ import { DataService, type Circuit, type TrackIndexEntry } from './data';
 })
 export class CircuitPicker implements OnInit {
   private readonly data = inject(DataService);
+  private readonly injector = inject(Injector);
+  /** Which section to show first: Home's Classics buttons open the picker scrolled to it. */
+  readonly section = input<'season' | 'classics'>('season');
   readonly pick = output<string>();
+  readonly home = output<void>();
   readonly credits = output<void>();
+  private readonly host = inject(ElementRef<HTMLElement>);
   protected readonly tracks = signal<TrackIndexEntry[]>([]);
   protected readonly season = computed(() => this.tracks().filter((t) => !t.classic));
   protected readonly classics = computed(() => this.tracks().filter((t) => t.classic));
@@ -86,6 +94,9 @@ export class CircuitPicker implements OnInit {
     try {
       const idx = await this.data.index();
       this.tracks.set(idx);
+      if (this.section() === 'classics') {
+        afterNextRender(() => this.host.nativeElement.querySelector('#classics')?.scrollIntoView({ block: 'start' }), { injector: this.injector });
+      }
       for (const t of idx) {
         this.data.circuit(t.trackId).then((c) => this.maps.update((m) => ({ ...m, [t.trackId]: c })));
       }
