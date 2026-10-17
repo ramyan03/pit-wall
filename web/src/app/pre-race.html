@@ -1,0 +1,198 @@
+@if (track(); as t) {
+  <main class="prerace">
+    <header class="prerace-head">
+      <button class="ghost" (click)="back.emit()">← Circuits</button>
+      <div>
+        <div class="eyebrow">Round {{ t.meta.round }} · {{ t.meta.season }}</div>
+        <h1>{{ t.meta.eventName }}</h1>
+      </div>
+    </header>
+
+    <div class="prerace-grid">
+      <!-- Left: briefing -->
+      <div class="stack">
+        <section class="card brief">
+          <div class="brief-map">
+            <app-circuit-map [circuit]="circuit()" [sectorFractions]="t.sectorFractions" />
+          </div>
+          <div class="brief-facts">
+            <div class="fact"><span class="eyebrow">Laps</span><strong>{{ t.meta.laps }}</strong></div>
+            @if (circuit()?.lengthM; as len) {
+              <div class="fact"><span class="eyebrow">Length</span><strong>{{ (len / 1000).toFixed(3) }} km</strong></div>
+              <div class="fact"><span class="eyebrow">Distance</span><strong>{{ ((len * t.meta.laps) / 1000).toFixed(1) }} km</strong></div>
+            }
+            <div class="fact"><span class="eyebrow">Air</span><strong>{{ t.conditions.airTempC }}°C</strong></div>
+            <div class="fact"><span class="eyebrow">Track (race)</span><strong>{{ t.conditions.trackTempC }}°C</strong></div>
+            @if (practice(); as p) {
+              <div class="fact"><span class="eyebrow">Track (FP2)</span><strong>{{ p.session.trackTempC }}°C</strong></div>
+            }
+            <div class="fact"><span class="eyebrow">Pit loss</span><strong>~{{ (t.pit.pitLoss + t.pit.stationaryMean).toFixed(0) }} s</strong></div>
+            <div class="fact wide">
+              <span class="eyebrow">Tyre allocation</span>
+              <span class="alloc">
+                @for (c of compounds; track c) {
+                  <span class="tyre sm" [attr.data-c]="c">{{ c }}</span> {{ t.compoundAllocation[c] }}
+                }
+              </span>
+            </div>
+            <div class="fact wide"><span class="eyebrow">Race control</span><span>{{ expectedIncidents() }}</span></div>
+          </div>
+        </section>
+
+        <!-- Practice long runs -->
+        <section class="card">
+          <div class="card-head">
+            <h2>Friday long runs (FP2, simulated)</h2>
+            <span class="muted small">Fuel-corrected · traffic laps hollow</span>
+          </div>
+          @if (practiceChart(); as pc) {
+            <div class="practice-panels">
+              @for (panel of pc.panels; track panel.c) {
+                <figure class="practice-panel">
+                  <figcaption><span class="tyre sm" [attr.data-c]="panel.c">{{ panel.c }}</span> {{ name[panel.c] }}</figcaption>
+                  <svg [attr.viewBox]="'0 0 ' + pc.W + ' ' + pc.H" role="img" [attr.aria-label]="name[panel.c] + ' long runs'" (mouseleave)="hover.set(null)">
+                    <line class="grid" [attr.x1]="pc.left" [attr.x2]="pc.right" [attr.y1]="pc.yHi" [attr.y2]="pc.yHi" />
+                    <line class="grid" [attr.x1]="pc.left" [attr.x2]="pc.right" [attr.y1]="pc.yLo" [attr.y2]="pc.yLo" />
+                    <text class="axis" [attr.x]="pc.left - 4" [attr.y]="pc.yHi + 3" text-anchor="end">{{ pc.hi.toFixed(1) }}</text>
+                    <text class="axis" [attr.x]="pc.left - 4" [attr.y]="pc.yLo + 3" text-anchor="end">{{ pc.lo.toFixed(1) }}</text>
+                    <text class="axis" [attr.x]="pc.left" [attr.y]="pc.H - 4">lap 1</text>
+                    <text class="axis" [attr.x]="pc.right" [attr.y]="pc.H - 4" text-anchor="end">{{ pc.maxLaps }}</text>
+                    @for (run of panel.runs; track run.driver + $index) {
+                      <path class="run-line" [attr.data-c]="panel.c" [attr.d]="run.d" />
+                      @for (pt of run.pts; track pt.lap) {
+                        <circle class="run-dot" [attr.data-c]="panel.c" [class.hollow]="pt.traffic" [attr.cx]="pt.x" [attr.cy]="pt.y" r="2.6"
+                          (mouseenter)="hover.set({ c: panel.c, driver: run.driver, lap: pt.lap, t: pt.t, traffic: pt.traffic })" />
+                      }
+                    }
+                  </svg>
+                  @if (panel.est; as e) {
+                    <div class="est">
+                      <span>deg <strong>{{ e.deg >= 0 ? '+' : '' }}{{ e.deg.toFixed(3) }}</strong> ±{{ e.degSe.toFixed(3) }} s/lap</span>
+                      @if (panel.c !== 'M') {
+                        <span>vs M <strong>{{ e.offset >= 0 ? '+' : '' }}{{ e.offset.toFixed(2) }}</strong> s</span>
+                      }
+                    </div>
+                  }
+                </figure>
+              }
+            </div>
+            <div class="readout muted small">
+              @if (hover(); as h) {
+                {{ h.driver }} · {{ name[h.c] }} lap {{ h.lap }}: <strong>{{ h.t.toFixed(3) }}</strong>{{ h.traffic ? ' (traffic)' : '' }}
+              } @else {
+                Steeper lines = more wear. Hover a lap for its time.
+              }
+            </div>
+          }
+        </section>
+
+        <!-- Recommended strategy -->
+        <section class="card">
+          <div class="card-head">
+            <h2>Strategy sims</h2>
+            @if (difficulty() !== 'hard') {
+              <button class="ghost small" (click)="runRecommend()" [disabled]="recommending() || !preview()">
+                {{ recommending() ? 'Simulating…' : recommendation() ? 'Re-run' : 'Run strategy sims' }}
+              </button>
+            }
+          </div>
+          @if (difficulty() === 'hard') {
+            <p class="muted">No strategist in Hard mode. Use the long runs above.</p>
+          } @else if (recommendation(); as r) {
+            <ol class="plans">
+              @for (p of r.plans; track $index) {
+                <li [class.best]="$first">
+                  <span class="plan-tyres">
+                    <span class="tyre xs" [attr.data-c]="p.start">{{ p.start }}</span>
+                    @for (s of p.stops; track $index) {
+                      <span class="tyre xs" [attr.data-c]="s.compound">{{ s.compound }}</span>
+                    }
+                  </span>
+                  <span>{{ planText(p.start, p.stops) }}</span>
+                  <span class="num">exp. P{{ p.meanPos.toFixed(1) }}</span>
+                </li>
+              }
+            </ol>
+            <p class="muted small">From P{{ selected()?.gridPosition }} · {{ r.ms.toFixed(0) }} ms in a worker, 16 futures per plan.</p>
+            @if (r.plans[0]?.start; as rec) {
+              @if (rec !== startCompound()) {
+                <button class="ghost small" (click)="startCompound.set(rec)">Start on {{ name[rec] }}s</button>
+              }
+            }
+          } @else {
+            <p class="muted">Simulates every 1- and 2-stop plan from your grid slot.</p>
+          }
+        </section>
+      </div>
+
+      <!-- Right: setup -->
+      <div class="stack">
+        <section class="card">
+          <h2>Your driver</h2>
+          <div class="driver-grid photos">
+            @for (d of grid(); track d.code) {
+              <button class="driver" [class.selected]="driver() === d.code" [style.--team]="teams().get(d.teamId)?.colour" (click)="driver.set(d.code)">
+                @if (data.photo(d.code); as src) {
+                  <img class="face" [src]="src" [alt]="d.fullName" loading="lazy" />
+                } @else {
+                  <span class="face mono">{{ d.code }}</span>
+                }
+                <span class="d-text">
+                  <span class="code">P{{ d.gridPosition }} · {{ d.code }}</span>
+                  <span class="team">{{ surname(d.fullName) }}</span>
+                </span>
+              </button>
+            }
+          </div>
+          @if (selected(); as s) {
+            <div class="selected-driver" [style.--team]="teams().get(s.teamId)?.colour">
+              @if (data.logo(s.teamId); as logo) {
+                <img class="logo" [src]="logo" [alt]="teams().get(s.teamId)?.name" />
+              } @else {
+                <span class="logo mono">{{ teams().get(s.teamId)?.name?.slice(0, 2) }}</span>
+              }
+              <div>
+                <div class="big-name">{{ s.fullName }} <span class="muted">#{{ s.number }}</span></div>
+                <div class="muted small">{{ teams().get(s.teamId)?.name }} · race engineer {{ engineers[s.teamId] ?? 'TBC' }} (fictional)</div>
+                @if (realPos(s.code); as rp) {
+                  <div class="muted small">Real race: P{{ s.gridPosition }} → P{{ rp }}</div>
+                }
+              </div>
+            </div>
+          }
+        </section>
+
+        <section class="card">
+          <h2>Difficulty</h2>
+          <div class="stack tight">
+            @for (d of difficulties; track d.id) {
+              <label class="radio-row" [class.selected]="difficulty() === d.id">
+                <input type="radio" name="diff" [checked]="difficulty() === d.id" (change)="difficulty.set(d.id)" />
+                <span class="cap">{{ d.id }}</span>
+                <span class="muted">{{ d.blurb }}</span>
+              </label>
+            }
+          </div>
+
+          <h2>Starting tyre</h2>
+          <div class="tyre-pick">
+            @for (c of compounds; track c) {
+              <button class="tyre-btn" [class.selected]="startCompound() === c" (click)="startCompound.set(c)">
+                <span class="tyre" [attr.data-c]="c">{{ c }}</span>{{ name[c] }}
+              </button>
+            }
+          </div>
+          <p class="muted small">Two different compounds in the race, or you're disqualified.</p>
+
+          <h2>Seed</h2>
+          <div class="seed-row">
+            <input type="number" [value]="seed()" (change)="seed.set(+$any($event.target).value)" />
+            <button class="ghost" (click)="newSeed()">🎲 New</button>
+          </div>
+        </section>
+
+        <button class="primary big" [disabled]="!driver()" (click)="go.emit(setup())">Lights out →</button>
+      </div>
+    </div>
+  </main>
+}

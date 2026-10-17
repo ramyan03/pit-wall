@@ -1,0 +1,306 @@
+@if (track(); as t) {
+  @let flag = store.flag();
+  <main class="race" [attr.data-status]="flag">
+    <!-- Race status banner -->
+    <header class="banner" [attr.data-status]="flag">
+      <div class="banner-left">
+        <button class="ghost small" (click)="exit.emit('circuits')" title="Back to circuits">←</button>
+        <span class="banner-event">{{ t.meta.eventName }}</span>
+      </div>
+      <div class="banner-flag">
+        @switch (flag) {
+          @case ('green') { Green flag }
+          @case ('sc') { Safety car }
+          @case ('vsc') { Virtual safety car }
+          @case ('red') { Red flag }
+          @case ('chequered') { Chequered flag }
+        }
+      </div>
+      <div class="banner-lap">L{{ store.leaderLap() }} <span>/ {{ t.meta.laps }}</span></div>
+    </header>
+
+    <div class="race-grid">
+      <!-- Timing tower -->
+      <section class="card tower">
+        <table>
+          <thead>
+            <tr>
+              <th class="num">P</th>
+              <th colspan="2">Driver</th>
+              <th class="num clickable" (click)="showGap.set(!showGap())" title="Toggle gap to leader / interval">{{ showGap() ? 'Gap' : 'Int' }} ⇄</th>
+              <th class="num sec">S1</th>
+              <th class="num sec">S2</th>
+              <th class="num sec">S3</th>
+              <th class="num opt">Last lap</th>
+              <th>Tyre</th>
+              <th class="num opt">Pit</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of live(); track c.code) {
+              <tr [class.me]="c.isPlayer" [class.dsq]="c.finished && c.car.status === 'disqualified'">
+                <td class="num pos">{{ c.position }}</td>
+                <td class="face-cell">
+                  <span class="teambar" [style.background]="colour(c.teamId)"></span>
+                  @if (data.photo(c.code); as src) {
+                    <img class="face xs" [src]="src" alt="" />
+                  }
+                </td>
+                <td class="drv">
+                  {{ c.code }}
+                  @if (c.inPitLap) {
+                    <span class="pit-tag">PIT</span>
+                  }
+                  @if (c.isPlayer && store.pendingBox(); as pb) {
+                    <span class="pit-tag box">BOX</span>
+                  }
+                </td>
+                <td class="num">{{ gapText(c) }}</td>
+                @for (s of c.sectors; track $index) {
+                  <td class="num sec" [attr.data-col]="s.colour" [class.dim]="!s.current">{{ s.time !== null ? s.time.toFixed(1) : '' }}</td>
+                }
+                <td class="num opt">{{ lapTime(c.car.lastLapTime) }}</td>
+                <td class="tyre-cell">
+                  <span class="tyre sm" [attr.data-c]="c.car.compound">{{ c.car.compound }}</span>
+                  <span class="age">{{ c.car.tyreAge }}</span>
+                </td>
+                <td class="num opt">{{ c.car.pitStops }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Centre: map + stint panel -->
+      <section class="stack">
+        <div class="card map-card">
+          <app-circuit-map [circuit]="store.circuit()" [sectorFractions]="t.sectorFractions" [dots]="dots()" />
+        </div>
+
+        @if (me(); as m) {
+          <div class="card stint">
+            <div class="stint-head">
+              <div class="me-id" [style.--team]="colour(m.teamId)">
+                @if (data.photo(m.code); as src) {
+                  <img class="face sm" [src]="src" [alt]="fullName(m.code)" />
+                }
+                <div>
+                  <div class="big-pos">P{{ m.position }}</div>
+                  <div class="muted small">{{ fullName(m.code) }}</div>
+                </div>
+              </div>
+              <div class="me-tyre">
+                <span class="tyre" [attr.data-c]="m.car.compound">{{ m.car.compound }}</span>
+                <div>
+                  <div>{{ name[m.car.compound] }}</div>
+                  <div class="muted small">{{ m.car.tyreAge }} laps</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="gaps">
+              <div>
+                <div class="eyebrow">Ahead</div>
+                @if (neighbours().ahead; as a) {
+                  <div class="gapval">{{ a.code }} <span>{{ m.interval !== null ? '−' + m.interval.toFixed(1) + 's' : '' }}</span></div>
+                  <div class="muted small">{{ name[a.car.compound] }} · {{ a.car.tyreAge }} laps · {{ a.car.pitStops }} stop(s)</div>
+                } @else {
+                  <div class="gapval">Leading</div>
+                }
+              </div>
+              <div>
+                <div class="eyebrow">Behind</div>
+                @if (neighbours().behind; as b) {
+                  <div class="gapval">{{ b.code }} <span>{{ b.interval !== null ? '+' + b.interval.toFixed(1) + 's' : '' }}</span></div>
+                  <div class="muted small">{{ name[b.car.compound] }} · {{ b.car.tyreAge }} laps · {{ b.car.pitStops }} stop(s)</div>
+                } @else {
+                  <div class="gapval">—</div>
+                }
+              </div>
+            </div>
+
+            <div class="eyebrow">Your lap times</div>
+            @if (bars(); as b) {
+              <svg class="bars" [attr.viewBox]="'0 0 ' + b.W + ' ' + b.H" role="img" aria-label="Your lap times" (mouseleave)="hoverBar.set(null)">
+                <line class="grid" [attr.x1]="b.left" [attr.x2]="b.right" [attr.y1]="b.yCeil" [attr.y2]="b.yCeil" />
+                <line class="grid" [attr.x1]="b.left" [attr.x2]="b.right" [attr.y1]="b.bottom" [attr.y2]="b.bottom" />
+                <text class="axis" [attr.x]="b.left - 4" [attr.y]="b.yCeil + 3" text-anchor="end">+4.0</text>
+                <text class="axis" [attr.x]="b.left - 4" [attr.y]="b.bottom" text-anchor="end">{{ lapTime(b.floor) }}</text>
+                <text class="axis" [attr.x]="b.right" [attr.y]="b.H - 3" text-anchor="end">L{{ b.total }}</text>
+                @for (bar of b.bars; track bar.lap) {
+                  <rect class="bar" [attr.data-c]="bar.compound" [attr.data-kind]="bar.kind" [class.on]="hoverBar()?.lap === bar.lap"
+                    [attr.x]="bar.x" [attr.y]="bar.y" [attr.width]="b.bw" [attr.height]="bar.h" rx="1" />
+                  <rect class="hit" [attr.x]="bar.x" y="0" [attr.width]="b.bw + 1" [attr.height]="b.H" (mouseenter)="hoverBar.set(bar)" />
+                }
+              </svg>
+              <div class="readout muted small">
+                @if (hoverBar(); as h) {
+                  Lap {{ h.lap }} · {{ name[h.compound] }}: <strong>{{ lapTime(h.time) }}</strong>{{ h.kind === 'pit' ? ' (pit)' : h.kind === 'neutral' ? ' (lap 1 / SC / VSC)' : '' }}
+                } @else {
+                  Bars growing = tyres going off. Grey = pit, lap 1 or neutralised.
+                }
+              </div>
+            } @else {
+              <div class="muted small">Lap times appear after lap 1.</div>
+            }
+
+            <div class="wear-row">
+              @if (wear(); as w) {
+                <span>Wear <strong>+{{ w.loss.toFixed(2) }} s/lap</strong></span>
+                <span class="muted">{{ w.lapsToCliff > 0 ? 'cliff in ~' + w.lapsToCliff + ' laps' : 'past the cliff' }}</span>
+              } @else {
+                <span class="muted">Wear hidden (Hard). Watch the bars.</span>
+              }
+            </div>
+
+            <div class="rule" [class.ok]="twoCompound().ok" [class.pending]="twoCompound().pending">
+              <span class="eyebrow">Two-compound rule</span>
+              <strong>{{ twoCompound().ok ? 'SATISFIED' : twoCompound().pending ? 'ON THE NEXT STOP' : 'NOT YET' }}</strong>
+            </div>
+
+            @if (store.hintsAllowed()) {
+              <div class="hint">
+                <div class="hint-head">
+                  <span class="eyebrow">Pit-window hint</span>
+                  <button class="ghost small" (click)="store.requestHint()" [disabled]="store.hintPending() || m.finished">
+                    {{ store.hintPending() ? 'Simulating…' : 'Ask strategy' }}
+                  </button>
+                </div>
+                @if (store.hint(); as h) {
+                  @if (h.plans[0]?.stops?.length === 0) {
+                    <strong>STAY OUT to the flag</strong> <span class="muted">· exp. P{{ h.plans[0]!.meanPos.toFixed(1) }}</span>
+                  } @else if (h.windows[0]; as w) {
+                    <strong>BOX L{{ w.from }}{{ w.to !== w.from ? '–' + w.to : '' }} FOR {{ name[w.compound].toUpperCase() }}S</strong>
+                    <span class="muted"> · exp. P{{ w.meanPos.toFixed(1) }}</span>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- Right: controls + radio -->
+      <section class="stack">
+        @if (me(); as m) {
+          <div class="card controls">
+            <h2>Controls</h2>
+            @let pb = store.pendingBox();
+            @if (!pb) {
+              <button class="box-big" (click)="store.box(boxCompound())" [disabled]="m.finished">BOX THIS LAP</button>
+            } @else {
+              <button class="box-big armed" (click)="store.box(null)">CANCEL BOX</button>
+            }
+            <div class="box-row">
+              @for (c of compounds; track c) {
+                <button class="box-btn" [class.armed]="(pb?.compound ?? boxCompound()) === c" (click)="choose(c); pb && store.box(c)">
+                  <span class="tyre sm" [attr.data-c]="c">{{ c }}</span>
+                </button>
+              }
+            </div>
+            @if (pb) {
+              <div class="pending">
+                <span class="eyebrow">Pending</span>
+                Boxing end of {{ pb.thisLap ? 'this' : 'next' }} lap for {{ name[pb.compound] }}s
+              </div>
+            }
+            @if (store.notice(); as n) {
+              <div class="muted small">{{ n }}</div>
+            }
+
+            <h2>Pace mode</h2>
+            <div class="seg">
+              @for (p of paceModes; track p) {
+                <button class="cap" [class.on]="store.paceMode() === p" (click)="store.setPace(p)">{{ p }}</button>
+              }
+            </div>
+
+            <h2>Simulation speed</h2>
+            <div class="seg speed">
+              <button [class.on]="store.speed() === 0" (click)="store.setSpeed(0)" title="Pause">❚❚</button>
+              @for (sp of speeds; track sp) {
+                <button [class.on]="store.speed() === sp" (click)="store.setSpeed(sp)">{{ speedLabel(sp) }}</button>
+              }
+            </div>
+            <div class="muted small">1× = 1/10 real time (~{{ ((t.drivers[0]?.basePace ?? 90) / 10).toFixed(0) }} s per lap).
+              @if (store.autoSlow(); as a) {
+                <span class="warn-text">Slowed: {{ a }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="card radio">
+          <div class="card-head">
+            <h2>Team radio</h2>
+            <span class="muted small">{{ engineer() }} (race engineer)</span>
+          </div>
+          <ul>
+            @for (r of radio(); track $index) {
+              <li [attr.data-who]="r.who">
+                <span class="flap">L{{ r.lap }}</span>
+                <span class="who">{{ r.who === 'eng' ? engineer().split(' ')[0] : r.who === 'drv' ? me()?.code : 'RC' }}</span>
+                <span class="msg">{{ r.text }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    @if (results(); as r) {
+      <div class="overlay">
+        <div class="card results">
+          @if (myResult(); as mine) {
+            <h2 class="podium">
+              @if (mine.car.status === 'disqualified') {
+                Disqualified
+              } @else {
+                P{{ mine.car.position }}{{ mine.car.position <= 3 ? ' · PODIUM' : mine.car.position <= 10 ? ' · POINTS' : '' }}
+              }
+            </h2>
+            <p class="verdict">
+              {{ fullName(mine.car.driver) }}: P{{ mine.grid }} → P{{ mine.car.position }}
+              @if (mine.real) {
+                · real race: P{{ mine.real.position }}
+                @if (mine.car.position < mine.real.position) {
+                  <span class="good-text">(beat reality by {{ mine.real.position - mine.car.position }})</span>
+                }
+              }
+              ·
+              @for (st of mine.car.stints; track $index) {
+                <span class="tyre xs" [attr.data-c]="st.compound">{{ st.compound }}</span>
+              }
+            </p>
+          }
+          <table>
+            <thead>
+              <tr><th class="num">P</th><th></th><th>Driver</th><th class="num">Time</th><th>Tyres</th><th class="num" title="Real result">Real</th></tr>
+            </thead>
+            <tbody>
+              @for (x of r; track x.car.driver; let i = $index) {
+                <tr [class.me]="x.car.isPlayer">
+                  <td class="num">{{ x.car.status === 'disqualified' ? 'DSQ' : x.car.position }}</td>
+                  <td><span class="teambar" [style.background]="colour(x.car.teamId)"></span></td>
+                  <td>{{ fullName(x.car.driver) }}</td>
+                  <td class="num">{{ x.car.status === 'disqualified' ? '' : i === 0 ? raceTime(x.car.totalTime) : '+' + x.car.gapToLeader.toFixed(3) }}</td>
+                  <td>
+                    @for (st of x.car.stints; track $index) {
+                      <span class="tyre xs" [attr.data-c]="st.compound">{{ st.compound }}</span>
+                    }
+                  </td>
+                  <td class="num muted">{{ x.real ? (x.real.status === 'Finished' || x.real.status === 'Lapped' ? 'P' + x.real.position : 'DNF') : '' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <div class="results-actions">
+            <button class="ghost" (click)="restart()">Same seed again</button>
+            <button class="ghost" (click)="exit.emit('prerace')">Change setup</button>
+            <button class="primary" (click)="exit.emit('circuits')">Circuits</button>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+}

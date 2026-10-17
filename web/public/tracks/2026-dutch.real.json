@@ -1,0 +1,268 @@
+{
+  "results": [
+    {
+      "code": "NOR",
+      "position": 1,
+      "grid": 1,
+      "status": "Finished",
+      "time": "2:04:44.859"
+    },
+    {
+      "code": "ANT",
+      "position": 2,
+      "grid": 3,
+      "status": "Finished",
+      "time": "+11.536"
+    },
+    {
+      "code": "RUS",
+      "position": 3,
+      "grid": 2,
+      "status": "Finished",
+      "time": "+15.906"
+    },
+    {
+      "code": "HAM",
+      "position": 4,
+      "grid": 5,
+      "status": "Finished",
+      "time": "+16.755"
+    },
+    {
+      "code": "LEC",
+      "position": 5,
+      "grid": 6,
+      "status": "Finished",
+      "time": "+17.258"
+    },
+    {
+      "code": "PIA",
+      "position": 6,
+      "grid": 4,
+      "status": "Finished",
+      "time": "+32.332"
+    },
+    {
+      "code": "LAW",
+      "position": 7,
+      "grid": 8,
+      "status": "Finished",
+      "time": "+1:19.915"
+    },
+    {
+      "code": "HUL",
+      "position": 8,
+      "grid": 13,
+      "status": "Lapped",
+      "time": "+36.049"
+    },
+    {
+      "code": "ALO",
+      "position": 9,
+      "grid": 18,
+      "status": "Lapped",
+      "time": "+48.393"
+    },
+    {
+      "code": "GAS",
+      "position": 10,
+      "grid": 11,
+      "status": "Lapped",
+      "time": "+49.640"
+    },
+    {
+      "code": "TSU",
+      "position": 11,
+      "grid": 12,
+      "status": "Lapped",
+      "time": "+54.322"
+    },
+    {
+      "code": "LIN",
+      "position": 12,
+      "grid": 10,
+      "status": "Lapped",
+      "time": "+1:05.680"
+    },
+    {
+      "code": "BOR",
+      "position": 13,
+      "grid": 9,
+      "status": "Lapped",
+      "time": "+1:06.235"
+    },
+    {
+      "code": "COL",
+      "position": 14,
+      "grid": 14,
+      "status": "Lapped",
+      "time": "+20.534"
+    },
+    {
+      "code": "PER",
+      "position": 15,
+      "grid": 22,
+      "status": "Lapped",
+      "time": "+58.582"
+    },
+    {
+      "code": "SAI",
+      "position": 16,
+      "grid": 17,
+      "status": "Lapped",
+      "time": "+1:10.271"
+    },
+    {
+      "code": "ALB",
+      "position": 17,
+      "grid": 16,
+      "status": "Retired",
+      "time": ""
+    },
+    {
+      "code": "BOT",
+      "position": 18,
+      "grid": 21,
+      "status": "Retired",
+      "time": null
+    },
+    {
+      "code": "OCO",
+      "position": 19,
+      "grid": 15,
+      "status": "Retired",
+      "time": null
+    },
+    {
+      "code": "STR",
+      "position": 20,
+      "grid": 19,
+      "status": "Retired",
+      "time": null
+    },
+    {
+      "code": "BEA",
+      "position": 21,
+      "grid": 20,
+      "status": "Retired",
+      "time": null
+    },
+    {
+      "code": "VER",
+      "position": 22,
+      "grid": 7,
+      "status": "Retired",
+      "time": null
+    }
+  ],
+  "pitLaps": {
+    "NOR": [
+      2,
+      21,
+      47
+    ],
+    "ANT": [
+      2,
+      21,
+      40,
+      56
+    ],
+    "RUS": [
+      2,
+      17,
+      40
+    ],
+    "LEC": [
+      2,
+      21,
+      43,
+      55
+    ],
+    "PIA": [
+      2,
+      18,
+      44,
+      55
+    ],
+    "HAM": [
+      2,
+      25,
+      55
+    ],
+    "LAW": [
+      2,
+      21,
+      47
+    ],
+    "LIN": [
+      2,
+      5,
+      36
+    ],
+    "GAS": [
+      2,
+      18,
+      46
+    ],
+    "COL": [
+      2,
+      8,
+      21,
+      45
+    ],
+    "TSU": [
+      2,
+      18,
+      44
+    ],
+    "HUL": [
+      2,
+      19,
+      48
+    ],
+    "OCO": [
+      2,
+      16,
+      36
+    ],
+    "ALB": [
+      2,
+      26,
+      49
+    ],
+    "ALO": [
+      2,
+      34
+    ],
+    "BEA": [
+      2
+    ],
+    "STR": [
+      2,
+      15,
+      35
+    ],
+    "BOR": [
+      2,
+      11,
+      34,
+      53
+    ],
+    "SAI": [
+      2,
+      30,
+      65
+    ],
+    "PER": [
+      2,
+      29,
+      52
+    ],
+    "BOT": [
+      2,
+      28,
+      51
+    ]
+  },
+  "source": "Jolpica (Ergast API)"
+}

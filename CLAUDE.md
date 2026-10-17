@@ -1,9 +1,11 @@
 # Pit Wall
 
-A browser-based F1 **race-strategy** game. No driving and no animation. A race runs
-lap by lap (1×/4×/16×, pausable). The player watches a timing tower, lap times, gaps
+A browser-based F1 **race-strategy** game. No driving. A race plays at 1/10 real time
+(~10 s a lap, sector-by-sector live timing, car dots moving on the real circuit outline;
+½×/1×/4×/16×, pausable). The player watches a timing tower, sector and lap times, gaps
 and tyre ages, and decides **when to pit, which compound to fit, and the pace mode**.
-Every track's parameters are fitted from real 2026 races with FastF1.
+Tracks are built from real 2026 races. Today that's Jolpica data plus manual tyre
+estimates (FastF1 live timing returns 401). The FastF1 fit is the goal (PLAN.md D1/D2).
 
 **What makes it different:** in Hard mode tyre wear % is never shown. You read wear from
 lap times, like a real strategist.
@@ -47,9 +49,11 @@ npm run test:data           # offline pytest
    no global state. `engine/tsconfig.json` sets `lib: ES2022, types: []` so the compiler
    enforces this. Functions take state and return new state.
 2. **All randomness goes through the seeded `Rng`** (`engine/src/rng.ts`). `Math.random()`
-   is banned in `/engine`. RNG state is stored in `RaceState.rngState`, so
-   **same seed + same commands = identical race**, and a race can resume from a snapshot.
-   Draw order is part of determinism. If you change it, update the golden tests on purpose.
+   is banned in `/engine`. `RaceState.rngState` is the race KEY: every lap draws from
+   independent streams hashed from (key, lap, driver, purpose), so **same seed + same
+   commands = identical race**, a race resumes from any snapshot, and one car's decision
+   never shifts another car's draws (common random numbers). Stream layout and draw order
+   are documented at the top of `race.ts`. If you change them, update tests on purpose.
 3. **The data schema is the contract.** `engine/schema/track.schema.json` is the only
    definition. `engine/src/types.ts` mirrors it by hand. `/data` validates every output
    against the same file (never copy it). Change schema + types + pipeline in the same
@@ -57,7 +61,12 @@ npm run test:data           # offline pytest
 4. **No hidden-info leaks.** In Hard mode the UI never reads `RaceState.effectiveTyres`
    or `TrackData.tyres`. It only reads `priorTyres`, track temp and observed lap times.
    Keep this behind a single selector.
-5. **No F1 logos or trademarks.** Use driver codes and numbers, team names and hex colours only.
+5. **Real names and branding are PRIVATE ONLY (owner's decision, 2026-10-16).** Real driver
+   names, teams, photos and logos are allowed for local/private play. **Never deploy this
+   build publicly** (`vercel.json` has git deployments disabled for this reason). Photos and logos come
+   only from Wikimedia Commons, with author + licence on the Credits screen
+   (`web/public/media/credits.json`). Teams without a free logo get a colour monogram.
+   Race engineers are fictional.
 6. Strategy search / Monte Carlo runs in the Web Worker (`web/src/app/*.worker.ts`), never on the UI thread.
 7. The engine has no acceptance tests until the PLAN.md validation passes (replay, balance, determinism).
 
@@ -110,8 +119,10 @@ drawn once per race from the seeded RNG and stored in `RaceState.effectiveTyres`
 
 ### Sim speed
 
-1×/4×/16× and pause. Auto-drop to 1× on SC/VSC/red or when a car within ±2 positions of
-the player pits.
+1× = 1/10 real time (`TIME_SCALE` in `race-store.ts`), plus ½×, 4×, 16× and pause. Auto-drop
+to 1× on SC/VSC/red or when a car within ±2 positions of the player pits. The engine still
+steps whole laps. The UI plays each lap out in race time. A BOX call before pit entry
+(90% of the lap) re-simulates that lap. Later, it applies to the next lap.
 
 ## Data pipeline (/data)
 
@@ -127,8 +138,15 @@ For each race, fit from FastF1 laps:
 - Output `data/out/<season>-<event>.json`, validated against `engine/schema/track.schema.json`.
 - **Always call `pitwall.cache.enable_cache()`** before loading a session. The cache
   (`data/cache/`) is gitignored.
-- Network: FastF1 needs `livetiming.formula1.com` and `api.jolpi.ca`. Some sandboxes block
-  these, so run the pipeline locally and commit the curated JSON.
+- Network: FastF1 needs `livetiming.formula1.com` and `api.jolpi.ca`. As of 2026-10 the
+  livetiming host returns **401** even locally, so FastF1 loads fail.
+- **Current builder:** `python -m pitwall.build_jolpica` (Jolpica only). It writes every
+  completed round to `data/out/` + `web/public/tracks/` (track JSON, `.circuit.json` outline
+  from bacinger/f1-circuits (MIT), `.real.json` real result, `index.json`) and fetches
+  Commons media. Tyres, temps, sector splits and SC rates come from its `PROFILES` table:
+  **manual estimates** (`fit.method: manual`). Red-flag tyre changes are filtered out of
+  the strategy templates.
+- The dev server reloads every open tab when `web/public` changes, so don't run the builder mid-race.
 
 ## Key files
 
@@ -136,6 +154,11 @@ For each race, fit from FastF1 laps:
 - `engine/src/rng.ts`: seeded mulberry32 RNG
 - `engine/src/race.ts`: `createRace` / `stepLap` / `applyCommand` / `simulateRace` (rough v1 of the whole model; RNG draw order documented at the top)
 - `engine/test/fixtures/track.synthetic.json`: hand-made 4-car fixture (`meta.synthetic: true`)
-- `engine/test/fixtures/track.synthetic22.json`: hand-made 22-car, 62-lap fixture. Copied to `web/public/tracks/synthetic-22.json` for the demo UI
+- `engine/src/practice.ts`: simulated Friday long runs + the strategist's regression on them
+- `engine/test/fixtures/track.synthetic22.json`: hand-made 22-car, 62-lap fixture (tests only)
+- `web/src/app/data.ts`: ALL data loading (swap for an API here if a backend arrives)
+- `web/src/app/race-store.ts`: live playback (race clock, sector timing, BOX re-sim, radio)
 - `web/src/app/visibility.ts`: the single Hard-mode hidden-info selector (convention #4)
+- `web/src/app/radio.ts`: fictional engineers + radio lines
+- `data/pitwall/build_jolpica.py`: season builder (see Data pipeline)
 - `data/pitwall/fetch_race.py`: loads one session and prints lap/stint/status counts

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "meta": {
     "season": 2026,
     "round": 99,
@@ -67,6 +67,11 @@
   },
   "trackEvo": 0.01,
   "noiseSigma": 0.25,
+  "sectorFractions": [
+    0.32,
+    0.36,
+    0.32
+  ],
   "pit": {
     "pitLoss": 25,
     "stationaryMean": 2.4,
@@ -165,6 +170,7 @@
       "code": "AAA",
       "number": 2,
       "teamId": "aurora",
+      "fullName": "Driver AAA",
       "basePace": 95.2,
       "gridPosition": 1
     },
@@ -172,6 +178,7 @@
       "code": "BBB",
       "number": 3,
       "teamId": "aurora",
+      "fullName": "Driver BBB",
       "basePace": 95.32,
       "gridPosition": 3
     },
@@ -179,6 +186,7 @@
       "code": "CCC",
       "number": 4,
       "teamId": "basalt",
+      "fullName": "Driver CCC",
       "basePace": 95.35,
       "gridPosition": 2
     },
@@ -186,6 +194,7 @@
       "code": "DDD",
       "number": 5,
       "teamId": "basalt",
+      "fullName": "Driver DDD",
       "basePace": 95.47,
       "gridPosition": 4
     },
@@ -193,6 +202,7 @@
       "code": "EEE",
       "number": 6,
       "teamId": "cobalt",
+      "fullName": "Driver EEE",
       "basePace": 95.5,
       "gridPosition": 5
     },
@@ -200,6 +210,7 @@
       "code": "FFF",
       "number": 7,
       "teamId": "cobalt",
+      "fullName": "Driver FFF",
       "basePace": 95.62,
       "gridPosition": 8
     },
@@ -207,6 +218,7 @@
       "code": "GGG",
       "number": 8,
       "teamId": "dune",
+      "fullName": "Driver GGG",
       "basePace": 95.65,
       "gridPosition": 7
     },
@@ -214,6 +226,7 @@
       "code": "HHH",
       "number": 9,
       "teamId": "dune",
+      "fullName": "Driver HHH",
       "basePace": 95.77,
       "gridPosition": 6
     },
@@ -221,6 +234,7 @@
       "code": "III",
       "number": 10,
       "teamId": "ember",
+      "fullName": "Driver III",
       "basePace": 95.8,
       "gridPosition": 9
     },
@@ -228,6 +242,7 @@
       "code": "JJJ",
       "number": 11,
       "teamId": "ember",
+      "fullName": "Driver JJJ",
       "basePace": 95.92,
       "gridPosition": 10
     },
@@ -235,6 +250,7 @@
       "code": "KKK",
       "number": 12,
       "teamId": "fjord",
+      "fullName": "Driver KKK",
       "basePace": 95.95,
       "gridPosition": 12
     },
@@ -242,6 +258,7 @@
       "code": "LLL",
       "number": 13,
       "teamId": "fjord",
+      "fullName": "Driver LLL",
       "basePace": 96.07,
       "gridPosition": 11
     },
@@ -249,6 +266,7 @@
       "code": "MMM",
       "number": 14,
       "teamId": "granite",
+      "fullName": "Driver MMM",
       "basePace": 96.1,
       "gridPosition": 13
     },
@@ -256,6 +274,7 @@
       "code": "NNN",
       "number": 15,
       "teamId": "granite",
+      "fullName": "Driver NNN",
       "basePace": 96.22,
       "gridPosition": 14
     },
@@ -263,6 +282,7 @@
       "code": "OOO",
       "number": 16,
       "teamId": "halcyon",
+      "fullName": "Driver OOO",
       "basePace": 96.25,
       "gridPosition": 17
     },
@@ -270,6 +290,7 @@
       "code": "PPP",
       "number": 17,
       "teamId": "halcyon",
+      "fullName": "Driver PPP",
       "basePace": 96.37,
       "gridPosition": 16
     },
@@ -277,6 +298,7 @@
       "code": "QQQ",
       "number": 18,
       "teamId": "ion",
+      "fullName": "Driver QQQ",
       "basePace": 96.4,
       "gridPosition": 15
     },
@@ -284,6 +306,7 @@
       "code": "RRR",
       "number": 19,
       "teamId": "ion",
+      "fullName": "Driver RRR",
       "basePace": 96.52,
       "gridPosition": 18
     },
@@ -291,6 +314,7 @@
       "code": "SSS",
       "number": 20,
       "teamId": "jade",
+      "fullName": "Driver SSS",
       "basePace": 96.6,
       "gridPosition": 19
     },
@@ -298,6 +322,7 @@
       "code": "TTT",
       "number": 21,
       "teamId": "jade",
+      "fullName": "Driver TTT",
       "basePace": 96.72,
       "gridPosition": 21
     },
@@ -305,6 +330,7 @@
       "code": "UUU",
       "number": 22,
       "teamId": "kestrel",
+      "fullName": "Driver UUU",
       "basePace": 96.8,
       "gridPosition": 20
     },
@@ -312,6 +338,7 @@
       "code": "VVV",
       "number": 23,
       "teamId": "kestrel",
+      "fullName": "Driver VVV",
       "basePace": 96.92,
       "gridPosition": 22
     }

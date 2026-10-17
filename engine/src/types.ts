@@ -4,7 +4,7 @@
  * schema and these types together, and bump `TRACK_SCHEMA_VERSION`.
  */
 
-export const TRACK_SCHEMA_VERSION = 1 as const;
+export const TRACK_SCHEMA_VERSION = 2 as const;
 
 // ---------------------------------------------------------------------------
 // Primitives
@@ -42,6 +42,8 @@ export interface TrackData {
   trackEvo: number;
   /** Per-lap Gaussian lap-time noise σ, in seconds. */
   noiseSigma: number;
+  /** Share of lap time in sectors 1–3 (sums to ~1). */
+  sectorFractions: [number, number, number];
   pit: PitModel;
   traffic: TrafficModel;
   incidents: IncidentModel;
@@ -142,6 +144,8 @@ export interface DriverEntry {
   code: DriverCode;
   number: number;
   teamId: TeamId;
+  /** Display name, e.g. "Max Verstappen". */
+  fullName: string;
   /** Fuel-corrected clean-air lap time on new tyres at refTemp (s), before compound offset. */
   basePace: number;
   /** Grid slot, 1-based. */
@@ -196,6 +200,10 @@ export interface CarState {
   totalTime: number;
   lastLapTime: number | null;
   bestLapTime: number | null;
+  /** Sector times of the last completed lap (pit loss and traffic land in S3). */
+  lastSectors: [number, number, number] | null;
+  /** Personal best per sector (green laps only). */
+  bestSectors: [number | null, number | null, number | null];
   gapToLeader: number;
   /** Gap to the car directly ahead. */
   interval: number;

@@ -1,0 +1,214 @@
+{
+  "results": [
+    {
+      "code": "ANT",
+      "position": 1,
+      "grid": 1,
+      "status": "Finished",
+      "time": "1:33:15.607"
+    },
+    {
+      "code": "RUS",
+      "position": 2,
+      "grid": 2,
+      "status": "Finished",
+      "time": "+5.515"
+    },
+    {
+      "code": "HAM",
+      "position": 3,
+      "grid": 3,
+      "status": "Finished",
+      "time": "+25.267"
+    },
+    {
+      "code": "LEC",
+      "position": 4,
+      "grid": 4,
+      "status": "Finished",
+      "time": "+28.894"
+    },
+    {
+      "code": "BEA",
+      "position": 5,
+      "grid": 10,
+      "status": "Finished",
+      "time": "+57.268"
+    },
+    {
+      "code": "GAS",
+      "position": 6,
+      "grid": 7,
+      "status": "Finished",
+      "time": "+59.647"
+    },
+    {
+      "code": "LAW",
+      "position": 7,
+      "grid": 14,
+      "status": "Finished",
+      "time": "+1:20.588"
+    },
+    {
+      "code": "HAD",
+      "position": 8,
+      "grid": 9,
+      "status": "Finished",
+      "time": "+1:27.247"
+    },
+    {
+      "code": "SAI",
+      "position": 9,
+      "grid": 17,
+      "status": "Lapped",
+      "time": "+11.673"
+    },
+    {
+      "code": "COL",
+      "position": 10,
+      "grid": 12,
+      "status": "Lapped",
+      "time": "+12.403"
+    },
+    {
+      "code": "HUL",
+      "position": 11,
+      "grid": 11,
+      "status": "Lapped",
+      "time": "+21.109"
+    },
+    {
+      "code": "LIN",
+      "position": 12,
+      "grid": 15,
+      "status": "Lapped",
+      "time": "+22.828"
+    },
+    {
+      "code": "BOT",
+      "position": 13,
+      "grid": 19,
+      "status": "Lapped",
+      "time": "+56.158"
+    },
+    {
+      "code": "OCO",
+      "position": 14,
+      "grid": 13,
+      "status": "Lapped",
+      "time": "+1:06.256"
+    },
+    {
+      "code": "PER",
+      "position": 15,
+      "grid": 21,
+      "status": "Lapped",
+      "time": "+1:14.641"
+    },
+    {
+      "code": "VER",
+      "position": 16,
+      "grid": 8,
+      "status": "Retired",
+      "time": null
+    },
+    {
+      "code": "ALO",
+      "position": 17,
+      "grid": 18,
+      "status": "Retired",
+      "time": null
+    },
+    {
+      "code": "STR",
+      "position": 18,
+      "grid": 20,
+      "status": "Retired",
+      "time": null
+    },
+    {
+      "code": "PIA",
+      "position": 19,
+      "grid": 5,
+      "status": "Did not start",
+      "time": null
+    },
+    {
+      "code": "NOR",
+      "position": 20,
+      "grid": 6,
+      "status": "Did not start",
+      "time": null
+    },
+    {
+      "code": "BOR",
+      "position": 21,
+      "grid": 16,
+      "status": "Did not start",
+      "time": null
+    },
+    {
+      "code": "ALB",
+      "position": 22,
+      "grid": 22,
+      "status": "Did not start",
+      "time": null
+    }
+  ],
+  "pitLaps": {
+    "HAD": [
+      1,
+      10
+    ],
+    "LAW": [
+      9
+    ],
+    "VER": [
+      9
+    ],
+    "SAI": [
+      9
+    ],
+    "ANT": [
+      10
+    ],
+    "RUS": [
+      10
+    ],
+    "HAM": [
+      10
+    ],
+    "LEC": [
+      10
+    ],
+    "GAS": [
+      10
+    ],
+    "BEA": [
+      10
+    ],
+    "BOT": [
+      10
+    ],
+    "PER": [
+      11
+    ],
+    "OCO": [
+      29,
+      46
+    ],
+    "ALO": [
+      31
+    ],
+    "COL": [
+      32
+    ],
+    "HUL": [
+      35
+    ],
+    "LIN": [
+      42
+    ]
+  },
+  "source": "Jolpica (Ergast API)"
+}

@@ -2,5 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
-  "outputDirectory": "web/dist/web/browser"
+  "outputDirectory": "web/dist/web/browser",
+  "git": {
+    "deploymentEnabled": false
+  }
 }

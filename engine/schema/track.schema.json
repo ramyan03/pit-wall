@@ -5,28 +5,89 @@
   "description": "Contract between /data (producer) and /engine (consumer). Mirrors engine/src/types.ts. Bump schemaVersion when either side changes.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "meta", "conditions", "compoundAllocation", "tyres", "priorTyres", "fuel", "trackEvo", "noiseSigma", "pit", "traffic", "incidents", "teams", "drivers", "strategies"],
+  "required": [
+    "schemaVersion",
+    "meta",
+    "conditions",
+    "compoundAllocation",
+    "tyres",
+    "priorTyres",
+    "fuel",
+    "trackEvo",
+    "noiseSigma",
+    "sectorFractions",
+    "pit",
+    "traffic",
+    "incidents",
+    "teams",
+    "drivers",
+    "strategies"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 2
+    },
     "meta": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["season", "round", "eventName", "trackId", "laps", "synthetic", "source"],
+      "required": [
+        "season",
+        "round",
+        "eventName",
+        "trackId",
+        "laps",
+        "synthetic",
+        "source"
+      ],
       "properties": {
-        "season": { "type": "integer", "minimum": 2018 },
-        "round": { "type": "integer", "minimum": 1 },
-        "eventName": { "type": "string", "minLength": 1 },
-        "trackId": { "type": "string", "pattern": "^[0-9]{4}-[a-z0-9-]+$" },
-        "laps": { "type": "integer", "minimum": 1, "maximum": 100 },
-        "synthetic": { "type": "boolean" },
+        "season": {
+          "type": "integer",
+          "minimum": 2018
+        },
+        "round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "eventName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trackId": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[a-z0-9-]+$"
+        },
+        "laps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
         "source": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["fastf1Version", "generatedAt", "incidentSeasons"],
+          "required": [
+            "fastf1Version",
+            "generatedAt",
+            "incidentSeasons"
+          ],
           "properties": {
-            "fastf1Version": { "type": ["string", "null"] },
-            "generatedAt": { "type": "string" },
-            "incidentSeasons": { "type": "array", "items": { "type": "integer" } }
+            "fastf1Version": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "generatedAt": {
+              "type": "string"
+            },
+            "incidentSeasons": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
           }
         }
       }
@@ -34,67 +95,180 @@
     "conditions": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["airTempC", "trackTempC", "refTempC"],
+      "required": [
+        "airTempC",
+        "trackTempC",
+        "refTempC"
+      ],
       "properties": {
-        "airTempC": { "type": "number" },
-        "trackTempC": { "type": "number" },
-        "refTempC": { "type": "number" }
+        "airTempC": {
+          "type": "number"
+        },
+        "trackTempC": {
+          "type": "number"
+        },
+        "refTempC": {
+          "type": "number"
+        }
       }
     },
     "compoundAllocation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["S", "M", "H"],
+      "required": [
+        "S",
+        "M",
+        "H"
+      ],
       "properties": {
-        "S": { "$ref": "#/$defs/pirelliCompound" },
-        "M": { "$ref": "#/$defs/pirelliCompound" },
-        "H": { "$ref": "#/$defs/pirelliCompound" }
+        "S": {
+          "$ref": "#/$defs/pirelliCompound"
+        },
+        "M": {
+          "$ref": "#/$defs/pirelliCompound"
+        },
+        "H": {
+          "$ref": "#/$defs/pirelliCompound"
+        }
       }
     },
-    "tyres": { "$ref": "#/$defs/tyreSet" },
-    "priorTyres": { "oneOf": [{ "$ref": "#/$defs/tyreSet" }, { "type": "null" }] },
+    "tyres": {
+      "$ref": "#/$defs/tyreSet"
+    },
+    "priorTyres": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/tyreSet"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "fuel": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["fuelSecPerLap"],
-      "properties": { "fuelSecPerLap": { "type": "number", "minimum": 0, "maximum": 0.2 } }
+      "required": [
+        "fuelSecPerLap"
+      ],
+      "properties": {
+        "fuelSecPerLap": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.2
+        }
+      }
     },
-    "trackEvo": { "type": "number", "minimum": 0, "maximum": 0.1 },
-    "noiseSigma": { "type": "number", "minimum": 0, "maximum": 2 },
+    "trackEvo": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.1
+    },
+    "noiseSigma": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2
+    },
+    "sectorFractions": {
+      "description": "Share of lap time in sectors 1-3 (sums to ~1).",
+      "type": "array",
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "maximum": 1
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
     "pit": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["pitLoss", "stationaryMean", "slowStopProb", "slowStopExtra"],
+      "required": [
+        "pitLoss",
+        "stationaryMean",
+        "slowStopProb",
+        "slowStopExtra"
+      ],
       "properties": {
-        "pitLoss": { "type": "number", "minimum": 5, "maximum": 40 },
-        "stationaryMean": { "type": "number", "minimum": 1, "maximum": 10 },
-        "slowStopProb": { "$ref": "#/$defs/probability" },
-        "slowStopExtra": { "$ref": "#/$defs/range" }
+        "pitLoss": {
+          "type": "number",
+          "minimum": 5,
+          "maximum": 40
+        },
+        "stationaryMean": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "slowStopProb": {
+          "$ref": "#/$defs/probability"
+        },
+        "slowStopExtra": {
+          "$ref": "#/$defs/range"
+        }
       }
     },
     "traffic": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["followGap", "overtakeDelta", "overtakeProb"],
+      "required": [
+        "followGap",
+        "overtakeDelta",
+        "overtakeProb"
+      ],
       "properties": {
-        "followGap": { "type": "number", "minimum": 0 },
-        "overtakeDelta": { "type": "number", "minimum": 0 },
-        "overtakeProb": { "$ref": "#/$defs/probability" }
+        "followGap": {
+          "type": "number",
+          "minimum": 0
+        },
+        "overtakeDelta": {
+          "type": "number",
+          "minimum": 0
+        },
+        "overtakeProb": {
+          "$ref": "#/$defs/probability"
+        }
       }
     },
     "incidents": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["scHazardPerLap", "vscHazardPerLap", "redHazardPerLap", "scDurationLaps", "vscDurationLaps", "scCompressedGap", "lapTimeMult", "pitLossMult"],
+      "required": [
+        "scHazardPerLap",
+        "vscHazardPerLap",
+        "redHazardPerLap",
+        "scDurationLaps",
+        "vscDurationLaps",
+        "scCompressedGap",
+        "lapTimeMult",
+        "pitLossMult"
+      ],
       "properties": {
-        "scHazardPerLap": { "$ref": "#/$defs/probability" },
-        "vscHazardPerLap": { "$ref": "#/$defs/probability" },
-        "redHazardPerLap": { "$ref": "#/$defs/probability" },
-        "scDurationLaps": { "$ref": "#/$defs/range" },
-        "vscDurationLaps": { "$ref": "#/$defs/range" },
-        "scCompressedGap": { "type": "number", "minimum": 0 },
-        "lapTimeMult": { "$ref": "#/$defs/neutralisedMult" },
-        "pitLossMult": { "$ref": "#/$defs/neutralisedMult" }
+        "scHazardPerLap": {
+          "$ref": "#/$defs/probability"
+        },
+        "vscHazardPerLap": {
+          "$ref": "#/$defs/probability"
+        },
+        "redHazardPerLap": {
+          "$ref": "#/$defs/probability"
+        },
+        "scDurationLaps": {
+          "$ref": "#/$defs/range"
+        },
+        "vscDurationLaps": {
+          "$ref": "#/$defs/range"
+        },
+        "scCompressedGap": {
+          "type": "number",
+          "minimum": 0
+        },
+        "lapTimeMult": {
+          "$ref": "#/$defs/neutralisedMult"
+        },
+        "pitLossMult": {
+          "$ref": "#/$defs/neutralisedMult"
+        }
       }
     },
     "teams": {
@@ -103,11 +277,24 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "colour"],
+        "required": [
+          "id",
+          "name",
+          "colour"
+        ],
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
-          "name": { "type": "string", "minLength": 1 },
-          "colour": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "colour": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          }
         }
       }
     },
@@ -117,13 +304,40 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["code", "number", "teamId", "basePace", "gridPosition"],
+        "required": [
+          "code",
+          "number",
+          "fullName",
+          "teamId",
+          "basePace",
+          "gridPosition"
+        ],
         "properties": {
-          "code": { "type": "string", "pattern": "^[A-Z]{3}$" },
-          "number": { "type": "integer", "minimum": 1, "maximum": 99 },
-          "teamId": { "type": "string" },
-          "basePace": { "type": "number", "minimum": 40, "maximum": 200 },
-          "gridPosition": { "type": "integer", "minimum": 1 }
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          },
+          "teamId": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "basePace": {
+            "type": "number",
+            "minimum": 40,
+            "maximum": 200
+          },
+          "gridPosition": {
+            "type": "integer",
+            "minimum": 1
+          }
         }
       }
     },
@@ -133,46 +347,154 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "stints", "pitLaps", "pitLapJitter", "weight"],
+        "required": [
+          "id",
+          "stints",
+          "pitLaps",
+          "pitLapJitter",
+          "weight"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "stints": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/compound" } },
-          "pitLaps": { "type": "array", "minItems": 1, "items": { "type": "integer", "minimum": 1 } },
-          "pitLapJitter": { "type": "integer", "minimum": 0 },
-          "weight": { "type": "number", "exclusiveMinimum": 0 }
+          "id": {
+            "type": "string"
+          },
+          "stints": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "$ref": "#/$defs/compound"
+            }
+          },
+          "pitLaps": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "pitLapJitter": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "weight": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
         }
       }
     }
   },
   "$defs": {
-    "compound": { "enum": ["S", "M", "H"] },
-    "pirelliCompound": { "enum": ["C1", "C2", "C3", "C4", "C5", "C6"] },
-    "probability": { "type": "number", "minimum": 0, "maximum": 1 },
-    "range": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "minItems": 2, "maxItems": 2 },
+    "compound": {
+      "enum": [
+        "S",
+        "M",
+        "H"
+      ]
+    },
+    "pirelliCompound": {
+      "enum": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6"
+      ]
+    },
+    "probability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "range": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
     "neutralisedMult": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["sc", "vsc"],
-      "properties": { "sc": { "type": "number", "minimum": 0 }, "vsc": { "type": "number", "minimum": 0 } }
+      "required": [
+        "sc",
+        "vsc"
+      ],
+      "properties": {
+        "sc": {
+          "type": "number",
+          "minimum": 0
+        },
+        "vsc": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
     },
     "compoundModel": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["compoundOffset", "degRate", "cliffLap", "cliffK", "tempSens", "fit"],
+      "required": [
+        "compoundOffset",
+        "degRate",
+        "cliffLap",
+        "cliffK",
+        "tempSens",
+        "fit"
+      ],
       "properties": {
-        "compoundOffset": { "type": "number" },
-        "degRate": { "type": "number", "minimum": 0 },
-        "cliffLap": { "type": "number", "minimum": 0 },
-        "cliffK": { "type": "number", "minimum": 0 },
-        "tempSens": { "type": "number" },
+        "compoundOffset": {
+          "type": "number"
+        },
+        "degRate": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cliffLap": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cliffK": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tempSens": {
+          "type": "number"
+        },
         "fit": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["nLaps", "r2", "method"],
+          "required": [
+            "nLaps",
+            "r2",
+            "method"
+          ],
           "properties": {
-            "nLaps": { "type": "integer", "minimum": 0 },
-            "r2": { "type": ["number", "null"] },
-            "method": { "enum": ["regression", "prior", "manual"] }
+            "nLaps": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "r2": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "method": {
+              "enum": [
+                "regression",
+                "prior",
+                "manual"
+              ]
+            }
           }
         }
       }
@@ -180,11 +502,21 @@
     "tyreSet": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["S", "M", "H"],
+      "required": [
+        "S",
+        "M",
+        "H"
+      ],
       "properties": {
-        "S": { "$ref": "#/$defs/compoundModel" },
-        "M": { "$ref": "#/$defs/compoundModel" },
-        "H": { "$ref": "#/$defs/compoundModel" }
+        "S": {
+          "$ref": "#/$defs/compoundModel"
+        },
+        "M": {
+          "$ref": "#/$defs/compoundModel"
+        },
+        "H": {
+          "$ref": "#/$defs/compoundModel"
+        }
       }
     }
   }

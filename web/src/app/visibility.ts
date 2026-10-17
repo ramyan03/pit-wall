@@ -3,7 +3,18 @@
  * In Hard mode these selectors never read `RaceState.effectiveTyres` or
  * `TrackData.tyres`: the player gets track temp, `priorTyres` and lap times only.
  */
-import { tyreLoss, type CarState, type Compound, type CompoundModel, type RaceState, type TrackData } from '@pit-wall/engine';
+import {
+  analysePractice,
+  simulatePractice,
+  tyreLoss,
+  type CarState,
+  type Compound,
+  type CompoundModel,
+  type PracticeEstimate,
+  type PracticeSession,
+  type RaceState,
+  type TrackData,
+} from '@pit-wall/engine';
 
 export interface WearReadout {
   /** Seconds per lap lost versus a new set of the same compound. */
@@ -36,4 +47,14 @@ export function tyreGuide(
 /** Pit-window hints are Easy/Normal only. */
 export function hintsAllowed(state: RaceState): boolean {
   return state.config.difficulty !== 'hard';
+}
+
+/**
+ * Simulated Friday long runs. Generated from the race-day truth but it only exposes noisy lap
+ * times (plus the strategist's regression on them), so it's allowed in every mode, and it is
+ * Hard mode's main clue.
+ */
+export function practiceFor(track: TrackData, state: RaceState): { session: PracticeSession; estimate: Record<Compound, PracticeEstimate | null> } {
+  const session = simulatePractice(track, state.effectiveTyres, state.config.seed);
+  return { session, estimate: analysePractice(session, track.fuel.fuelSecPerLap) };
 }

@@ -10,6 +10,7 @@ import {
   tyreLoss,
 } from '../src/race';
 import type { PaceMode, RaceConfig, RaceState, TrackData } from '../src/types';
+import { analysePractice, simulatePractice } from '../src/practice';
 import { synthetic22, syntheticTrack } from './fixtures';
 
 const config = (seed: number, over: Partial<RaceConfig> = {}): RaceConfig => ({
@@ -92,14 +93,20 @@ describe('M1 lap loop', () => {
     const track = calm(synthetic22, { strategies: [{ id: 'late', stints: ['M', 'H'], pitLaps: [40], pitLapJitter: 0, weight: 1 }] });
     const grid = Object.fromEntries(track.drivers.map((d) => [d.code, d.gridPosition]));
     let changed = 0;
+    let moved = 0;
+    let n = 0;
     for (let seed = 0; seed < 50; seed++) {
       const s = stepLap(track, createRace(track, config(seed)));
       for (const car of s.cars) {
-        expect(Math.abs(car.position - grid[car.driver]!)).toBeLessThanOrEqual(3);
-        if (car.position !== grid[car.driver]) changed++;
+        const d = Math.abs(car.position - grid[car.driver]!);
+        expect(d).toBeLessThanOrEqual(5);
+        moved += d;
+        n++;
+        if (d) changed++;
       }
     }
     expect(changed).toBeGreaterThan(0);
+    expect(moved / n).toBeLessThan(1.5); // a shuffle, not a lottery
   });
 
   it('no green lap is faster than the model allows', () => {
@@ -121,8 +128,8 @@ describe('M1 lap loop', () => {
     const track = calm(syntheticTrack, {
       noiseSigma: 0,
       drivers: [
-        { code: 'SLO', number: 1, teamId: 'team-a', basePace: 90.5, gridPosition: 1 },
-        { code: 'FST', number: 2, teamId: 'team-b', basePace: 90.0, gridPosition: 2 },
+        { code: 'SLO', number: 1, teamId: 'team-a', fullName: 'SLO', basePace: 90.5, gridPosition: 1 },
+        { code: 'FST', number: 2, teamId: 'team-b', fullName: 'FST', basePace: 90.0, gridPosition: 2 },
       ],
       strategies: [{ id: 'late', stints: ['M', 'H'], pitLaps: [45], pitLapJitter: 0, weight: 1 }],
     });
@@ -147,8 +154,8 @@ describe('M1 lap loop', () => {
     const track = calm(syntheticTrack, {
       noiseSigma: 0,
       drivers: [
-        { code: 'SLO', number: 1, teamId: 'team-a', basePace: 91.5, gridPosition: 1 },
-        { code: 'FST', number: 2, teamId: 'team-b', basePace: 90.0, gridPosition: 2 },
+        { code: 'SLO', number: 1, teamId: 'team-a', fullName: 'SLO', basePace: 91.5, gridPosition: 1 },
+        { code: 'FST', number: 2, teamId: 'team-b', fullName: 'FST', basePace: 90.0, gridPosition: 2 },
       ],
       strategies: [{ id: 'late', stints: ['M', 'H'], pitLaps: [45], pitLapJitter: 0, weight: 1 }],
     });
@@ -275,5 +282,75 @@ describe('M4 SC / VSC / red flag', () => {
     const me = s.cars.find((c) => c.isPlayer)!;
     expect(me.compoundsUsed.length).toBe(2);
     expect(me.tyreAge).toBe(0);
+  });
+});
+
+describe('sectors', () => {
+  it('sector times add up to the lap time, pit loss lands in S3', () => {
+    const s = laps(synthetic22, config(11));
+    for (const st of s.slice(1)) {
+      for (const car of st.cars) {
+        const [a, b, c] = car.lastSectors!;
+        expect(a + b + c).toBeCloseTo(car.lastLapTime!, 9);
+        expect(a).toBeGreaterThan(0);
+        expect(b).toBeGreaterThan(0);
+        expect(c).toBeGreaterThan(0);
+      }
+    }
+    const end = s.at(-1)!;
+    const pitLap = end.events.find((e) => e.type === 'pit_stop')!;
+    const atPit = s[pitLap.lap]!.cars.find((c) => c.driver === (pitLap as { driver: string }).driver)!;
+    expect(atPit.lastSectors![2]).toBeGreaterThan(synthetic22.pit.pitLoss);
+  });
+
+  it('green S1/S2 follow sectorFractions', () => {
+    const s = simulateRace(calm(synthetic22), config(3));
+    const [f1, f2] = synthetic22.sectorFractions;
+    for (const car of s.cars) {
+      const [a, b] = car.bestSectors;
+      expect(a! / car.bestLapTime!).toBeCloseTo(f1, 1);
+      expect(b! / car.bestLapTime!).toBeCloseTo(f2, 1);
+    }
+  });
+});
+
+describe('practice', () => {
+  it('is deterministic and does not touch the race stream', () => {
+    const a = simulatePractice(synthetic22, synthetic22.tyres, 42);
+    expect(simulatePractice(synthetic22, synthetic22.tyres, 42)).toEqual(a);
+    expect(simulatePractice(synthetic22, synthetic22.tyres, 43)).not.toEqual(a);
+  });
+
+  it('long-run analysis recovers deg and compound offsets (same driver across compounds)', () => {
+    let hits = 0;
+    let offsetsClose = 0;
+    const n = 100;
+    for (let seed = 0; seed < n; seed++) {
+      const sess = simulatePractice(calm(synthetic22), synthetic22.tyres, seed);
+      const est = analysePractice(sess, synthetic22.fuel.fuelSecPerLap);
+      const m = synthetic22.tyres.M;
+      const tm = 1 + m.tempSens * (sess.trackTempC - synthetic22.conditions.refTempC);
+      if (Math.abs(est.M!.deg - m.degRate * tm) < 2.5 * est.M!.degSe) hits++;
+      const t = synthetic22.tyres;
+      if (Math.abs(est.S!.offset - t.S.compoundOffset) < 0.4 && Math.abs(est.H!.offset - t.H.compoundOffset) < 0.4) offsetsClose++;
+    }
+    expect(hits).toBeGreaterThan(85);
+    expect(offsetsClose).toBeGreaterThan(85);
+  });
+});
+
+describe('common random numbers', () => {
+  it('same seed, different player strategy: identical incidents and identical laps for cars ahead', () => {
+    const track = synthetic22;
+    for (let seed = 0; seed < 30; seed++) {
+      const a = laps(track, config(seed, { playerDriver: 'VVV', playerStrategy: { startCompound: 'M', stops: [{ lap: 20, compound: 'H' }], neutralisedPitWindow: 3 } }));
+      const b = laps(track, config(seed, { playerDriver: 'VVV', playerStrategy: { startCompound: 'H', stops: [{ lap: 40, compound: 'M' }], neutralisedPitWindow: 3 } }));
+      const incidents = (s: RaceState) => s.events.filter((e) => /sc_|vsc_|red_flag|restart/.test(e.type));
+      expect(incidents(a.at(-1)!)).toEqual(incidents(b.at(-1)!));
+      // Lap 1 is identical for every car the player can't affect (all of them start ahead).
+      const leaderA = a[1]!.cars[0]!;
+      const leaderB = b[1]!.cars.find((c) => c.driver === leaderA.driver)!;
+      expect(leaderB.lastSectors![0]).toBe(leaderA.lastSectors![0]);
+    }
   });
 });

@@ -10,4 +10,6 @@ export {
   tyreLoss,
   tempMult,
   PACE_MODES,
+  SECTOR_SIGMA,
 } from './race';
+export { simulatePractice, analysePractice, type PracticeRun, type PracticeSession, type PracticeEstimate } from './practice';
